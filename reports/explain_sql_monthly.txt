@@ -1,0 +1,37 @@
+== Parsed Logical Plan ==
+'GlobalLimit 15
++- 'LocalLimit 15
+   +- 'Sort ['net_revenue DESC NULLS LAST], true
+      +- 'Aggregate ['category, 'store_region], ['category, 'store_region, 'SUM('net_revenue) AS net_revenue#583, 'SUM('orders) AS orders#584]
+         +- 'Filter ('sale_month >= 2024-01)
+            +- 'UnresolvedRelation [monthly_sales], [], false
+
+== Analyzed Logical Plan ==
+category: string, store_region: string, net_revenue: double, orders: bigint
+GlobalLimit 15
++- LocalLimit 15
+   +- Sort [net_revenue#583 DESC NULLS LAST], true
+      +- Aggregate [category#572, store_region#571], [category#572, store_region#571, sum(net_revenue#579) AS net_revenue#583, sum(orders#576L) AS orders#584L]
+         +- Filter (sale_month#570 >= 2024-01)
+            +- SubqueryAlias monthly_sales
+               +- View (`monthly_sales`, [sale_month#570, store_region#571, category#572, subcategory#573, channel#574, price_band#575, orders#576L, units#577L, gross_revenue#578, net_revenue#579, avg_discount#580, customers#581L, sale_year#582])
+                  +- Relation [sale_month#570,store_region#571,category#572,subcategory#573,channel#574,price_band#575,orders#576L,units#577L,gross_revenue#578,net_revenue#579,avg_discount#580,customers#581L,sale_year#582] parquet
+
+== Optimized Logical Plan ==
+GlobalLimit 15
++- LocalLimit 15
+   +- Sort [net_revenue#583 DESC NULLS LAST], true
+      +- Aggregate [category#572, store_region#571], [category#572, store_region#571, sum(net_revenue#579) AS net_revenue#583, sum(orders#576L) AS orders#584L]
+         +- Project [store_region#571, category#572, orders#576L, net_revenue#579]
+            +- Filter (isnotnull(sale_month#570) AND (sale_month#570 >= 2024-01))
+               +- Relation [sale_month#570,store_region#571,category#572,subcategory#573,channel#574,price_band#575,orders#576L,units#577L,gross_revenue#578,net_revenue#579,avg_discount#580,customers#581L,sale_year#582] parquet
+
+== Physical Plan ==
+AdaptiveSparkPlan isFinalPlan=false
++- TakeOrderedAndProject(limit=15, orderBy=[net_revenue#583 DESC NULLS LAST], output=[category#572,store_region#571,net_revenue#583,orders#584L])
+   +- HashAggregate(keys=[category#572, store_region#571], functions=[sum(net_revenue#579), sum(orders#576L)], output=[category#572, store_region#571, net_revenue#583, orders#584L])
+      +- Exchange hashpartitioning(category#572, store_region#571, 32), ENSURE_REQUIREMENTS, [plan_id=2112]
+         +- HashAggregate(keys=[category#572, store_region#571], functions=[partial_sum(net_revenue#579), partial_sum(orders#576L)], output=[category#572, store_region#571, sum#589, sum#590L])
+            +- Project [store_region#571, category#572, orders#576L, net_revenue#579]
+               +- Filter (isnotnull(sale_month#570) AND (sale_month#570 >= 2024-01))
+                  +- FileScan parquet [sale_month#570,store_region#571,category#572,orders#576L,net_revenue#579,sale_year#582] Batched: true, DataFilters: [isnotnull(sale_month#570), (sale_month#570 >= 2024-01)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/Users/ajr115/Desktop/PySpark Data Processing/output/monthly_sales], PartitionFilters: [], PushedFilters: [IsNotNull(sale_month), GreaterThanOrEqual(sale_month,2024-01)], ReadSchema: struct<sale_month:string,store_region:string,category:string,orders:bigint,net_revenue:double>

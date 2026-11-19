@@ -1,0 +1,259 @@
+{
+  "id": 10,
+  "status": "COMPLETED",
+  "description": "pruning-by-month",
+  "planDescription": "== Physical Plan ==\nAdaptiveSparkPlan (13)\n+- == Final Plan ==\n   ResultQueryStage (8), Statistics(sizeInBytes=8.0 EiB)\n   +- * HashAggregate (7)\n      +- ShuffleQueryStage (6), Statistics(sizeInBytes=1088.0 B, rowCount=68)\n         +- Exchange (5)\n            +- * HashAggregate (4)\n               +- * Project (3)\n                  +- * ColumnarToRow (2)\n                     +- Scan parquet  (1)\n+- == Initial Plan ==\n   HashAggregate (12)\n   +- Exchange (11)\n      +- HashAggregate (10)\n         +- Project (9)\n            +- Scan parquet  (1)\n\n\n(1) Scan parquet \nOutput [1]: [sale_month#171]\nBatched: true\nLocation: InMemoryFileIndex [file:/Users/ajr115/Desktop/PySpark Data Processing/data/transactions]\nPartitionFilters: [isnotnull(sale_month#171), (sale_month#171 >= 2023-01)]\nReadSchema: struct<>\n\n(2) ColumnarToRow [codegen id : 1]\nInput [1]: [sale_month#171]\n\n(3) Project [codegen id : 1]\nOutput: []\nInput [1]: [sale_month#171]\n\n(4) HashAggregate [codegen id : 1]\nInput: []\nKeys: []\nFunctions [1]: [partial_count(1)]\nAggregate Attributes [1]: [count#218L]\nResults [1]: [count#219L]\n\n(5) Exchange\nInput [1]: [count#219L]\nArguments: SinglePartition, ENSURE_REQUIREMENTS, [plan_id=628]\n\n(6) ShuffleQueryStage\nOutput [1]: [count#219L]\nArguments: 0\n\n(7) HashAggregate [codegen id : 2]\nInput [1]: [count#219L]\nKeys: []\nFunctions [1]: [count(1)]\nAggregate Attributes [1]: [count(1)#217L]\nResults [1]: [count(1)#217L AS count#199L]\n\n(8) ResultQueryStage\nOutput [1]: [count#199L]\nArguments: 1\n\n(9) Project\nOutput: []\nInput [1]: [sale_month#171]\n\n(10) HashAggregate\nInput: []\nKeys: []\nFunctions [1]: [partial_count(1)]\nAggregate Attributes [1]: [count#218L]\nResults [1]: [count#219L]\n\n(11) Exchange\nInput [1]: [count#219L]\nArguments: SinglePartition, ENSURE_REQUIREMENTS, [plan_id=612]\n\n(12) HashAggregate\nInput [1]: [count#219L]\nKeys: []\nFunctions [1]: [count(1)]\nAggregate Attributes [1]: [count(1)#217L]\nResults [1]: [count(1)#217L AS count#199L]\n\n(13) AdaptiveSparkPlan\nOutput [1]: [count#199L]\nArguments: isFinalPlan=true\n\n",
+  "submissionTime": "2026-11-19T15:04:34.489GMT",
+  "duration": 364,
+  "runningJobIds": [],
+  "successJobIds": [
+    22,
+    23
+  ],
+  "failedJobIds": [],
+  "nodes": [
+    {
+      "nodeId": 8,
+      "nodeName": "Scan parquet",
+      "metrics": [
+        {
+          "name": "number of files read",
+          "value": "144"
+        },
+        {
+          "name": "scan time",
+          "value": "total (min, med, max (stageId: taskId))\n1.1 s (3 ms, 10 ms, 93 ms (stage 30.0: task 227))"
+        },
+        {
+          "name": "dynamic partition pruning time",
+          "value": "0 ms"
+        },
+        {
+          "name": "metadata time",
+          "value": "0 ms"
+        },
+        {
+          "name": "size of files read",
+          "value": "747.2 MiB"
+        },
+        {
+          "name": "number of output rows",
+          "value": "9,495,016"
+        },
+        {
+          "name": "number of partitions read",
+          "value": "24"
+        }
+      ],
+      "desc": "FileScan parquet [sale_month#171] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/Users/ajr115/Desktop/PySpark Data Processing/data/transactions], PartitionFilters: [isnotnull(sale_month#171), (sale_month#171 >= 2023-01)], PushedFilters: [], ReadSchema: struct<>"
+    },
+    {
+      "nodeId": 7,
+      "nodeName": "ColumnarToRow",
+      "wholeStageCodegenId": 1,
+      "metrics": [
+        {
+          "name": "number of output rows",
+          "value": "9,495,016"
+        },
+        {
+          "name": "number of input batches",
+          "value": "2,388"
+        }
+      ],
+      "desc": "ColumnarToRow"
+    },
+    {
+      "nodeId": 6,
+      "nodeName": "Project",
+      "wholeStageCodegenId": 1,
+      "metrics": [],
+      "desc": "Project"
+    },
+    {
+      "nodeId": 5,
+      "nodeName": "HashAggregate",
+      "wholeStageCodegenId": 1,
+      "metrics": [
+        {
+          "name": "time in aggregation build",
+          "value": "total (min, med, max (stageId: taskId))\n1.3 s (4 ms, 13 ms, 104 ms (stage 30.0: task 214))"
+        },
+        {
+          "name": "number of output rows",
+          "value": "68"
+        }
+      ],
+      "desc": "HashAggregate(keys=[], functions=[partial_count(1)])"
+    },
+    {
+      "nodeId": 4,
+      "nodeName": "WholeStageCodegen (1)",
+      "metrics": [
+        {
+          "name": "duration",
+          "value": "total (min, med, max (stageId: taskId))\n1.4 s (5 ms, 13 ms, 104 ms (stage 30.0: task 214))"
+        }
+      ],
+      "desc": "WholeStageCodegen (1)"
+    },
+    {
+      "nodeId": 3,
+      "nodeName": "Exchange",
+      "metrics": [
+        {
+          "name": "shuffle records written",
+          "value": "68"
+        },
+        {
+          "name": "remote merged reqs duration",
+          "value": "0 ms"
+        },
+        {
+          "name": "remote merged blocks fetched",
+          "value": "0"
+        },
+        {
+          "name": "records read",
+          "value": "68"
+        },
+        {
+          "name": "local bytes read",
+          "value": "3.9 KiB"
+        },
+        {
+          "name": "merged fetch fallback count",
+          "value": "0"
+        },
+        {
+          "name": "local blocks read",
+          "value": "68"
+        },
+        {
+          "name": "remote merged chunks fetched",
+          "value": "0"
+        },
+        {
+          "name": "remote blocks read",
+          "value": "0"
+        },
+        {
+          "name": "data size",
+          "value": "total (min, med, max (stageId: taskId))\n1088.0 B (16.0 B, 16.0 B, 16.0 B (stage 30.0: task 171))"
+        },
+        {
+          "name": "local merged bytes read",
+          "value": "0.0 B"
+        },
+        {
+          "name": "local merged chunks fetched",
+          "value": "0"
+        },
+        {
+          "name": "shuffle write time",
+          "value": "total (min, med, max (stageId: taskId))\n71 ms (0 ms, 0 ms, 5 ms (stage 30.0: task 220))"
+        },
+        {
+          "name": "remote merged bytes read",
+          "value": "0.0 B"
+        },
+        {
+          "name": "local merged blocks fetched",
+          "value": "0"
+        },
+        {
+          "name": "corrupt merged block chunks",
+          "value": "0"
+        },
+        {
+          "name": "fetch wait time",
+          "value": "0 ms"
+        },
+        {
+          "name": "remote bytes read",
+          "value": "0.0 B"
+        },
+        {
+          "name": "number of partitions",
+          "value": "1"
+        },
+        {
+          "name": "remote reqs duration",
+          "value": "0 ms"
+        },
+        {
+          "name": "remote bytes read to disk",
+          "value": "0.0 B"
+        },
+        {
+          "name": "shuffle bytes written",
+          "value": "total (min, med, max (stageId: taskId))\n3.9 KiB (59.0 B, 59.0 B, 59.0 B (stage 30.0: task 171))"
+        }
+      ],
+      "desc": "Exchange SinglePartition, ENSURE_REQUIREMENTS, [plan_id=628]"
+    },
+    {
+      "nodeId": 2,
+      "nodeName": "HashAggregate",
+      "wholeStageCodegenId": 2,
+      "metrics": [
+        {
+          "name": "time in aggregation build",
+          "value": "4 ms"
+        },
+        {
+          "name": "number of output rows",
+          "value": "1"
+        }
+      ],
+      "desc": "HashAggregate(keys=[], functions=[count(1)])"
+    },
+    {
+      "nodeId": 1,
+      "nodeName": "WholeStageCodegen (2)",
+      "metrics": [
+        {
+          "name": "duration",
+          "value": "5 ms"
+        }
+      ],
+      "desc": "WholeStageCodegen (2)"
+    },
+    {
+      "nodeId": 0,
+      "nodeName": "AdaptiveSparkPlan",
+      "metrics": [],
+      "desc": "AdaptiveSparkPlan isFinalPlan=true"
+    }
+  ],
+  "edges": [
+    {
+      "fromId": 2,
+      "toId": 0
+    },
+    {
+      "fromId": 3,
+      "toId": 2
+    },
+    {
+      "fromId": 5,
+      "toId": 3
+    },
+    {
+      "fromId": 6,
+      "toId": 5
+    },
+    {
+      "fromId": 7,
+      "toId": 6
+    },
+    {
+      "fromId": 8,
+      "toId": 7
+    }
+  ],
+  "queryId": "01a1f456-89b7-75e7-b669-3872ad3626c3",
+  "errorMessage": "",
+  "rootExecutionId": 10,
+  "modifiedConfigs": {}
+}

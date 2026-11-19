@@ -1,0 +1,59 @@
+== Parsed Logical Plan ==
+'Sort ['channel ASC NULLS FIRST, 'region_match ASC NULLS FIRST, 'status ASC NULLS FIRST], true
++- 'UnresolvedHint BROADCAST, ['c]
+   +- 'Aggregate ['f.channel, CASE WHEN ('f.store_region = 'c.customer_region) THEN same_region ELSE cross_region END, 'f.status], ['f.channel AS channel#595, CASE WHEN ('f.store_region = 'c.customer_region) THEN same_region ELSE cross_region END AS region_match#596, 'f.status AS status#597, 'COUNT(1) AS transactions#598]
+      +- 'Filter ('c.customer_active = true)
+         +- 'Join Inner, ('f.customer_id = 'c.customer_id)
+            :- 'SubqueryAlias f
+            :  +- 'UnresolvedRelation [recent_fact], [], false
+            +- 'SubqueryAlias c
+               +- 'UnresolvedRelation [customer_dim], [], false
+
+== Analyzed Logical Plan ==
+channel: string, region_match: string, status: string, transactions: bigint
+Sort [channel#595 ASC NULLS FIRST, region_match#596 ASC NULLS FIRST, status#597 ASC NULLS FIRST], true
++- Aggregate [channel#163, CASE WHEN (store_region#166 = customer_region#182) THEN same_region ELSE cross_region END, status#165], [channel#163 AS channel#595, CASE WHEN (store_region#166 = customer_region#182) THEN same_region ELSE cross_region END AS region_match#596, status#165 AS status#597, count(1) AS transactions#598L]
+   +- Filter (customer_active#188 = true)
+      +- Join Inner, (customer_id#156L = customer_id#180L)
+         :- SubqueryAlias f
+         :  +- SubqueryAlias recent_fact
+         :     +- View (`recent_fact`, [customer_id#156L, channel#163, status#165, store_region#166, sale_month#171])
+         :        +- Project [customer_id#156L, channel#163, status#165, store_region#166, sale_month#171]
+         :           +- Filter (sale_month#171 >= 2023-01)
+         :              +- Relation [transaction_id#155L,customer_id#156L,product_id#157L,store_id#158,sale_date#159,quantity#160,unit_price#161,discount_pct#162,channel#163,payment_method#164,status#165,store_region#166,device_type#167,promo_code#168,receipt_token#169,payment_ref#170,sale_month#171] parquet
+         +- ResolvedHint (strategy=broadcast)
+            +- SubqueryAlias c
+               +- SubqueryAlias customer_dim
+                  +- View (`customer_dim`, [customer_id#180L, customer_region#182, customer_active#188])
+                     +- Project [customer_id#180L, customer_region#182, customer_active#188]
+                        +- Project [customer_id#180L, signup_date#181, customer_region#182, segment#183, loyalty_tier#184, age_band#185, is_active#186 AS customer_active#188]
+                           +- Relation [customer_id#180L,signup_date#181,customer_region#182,segment#183,loyalty_tier#184,age_band#185,is_active#186] parquet
+
+== Optimized Logical Plan ==
+Sort [channel#163 ASC NULLS FIRST, region_match#596 ASC NULLS FIRST, status#165 ASC NULLS FIRST], true
++- Aggregate [channel#163, _groupingexpression#600, status#165], [channel#163, _groupingexpression#600 AS region_match#596, status#165, count(1) AS transactions#598L]
+   +- Project [channel#163, status#165, CASE WHEN (store_region#166 = customer_region#182) THEN same_region ELSE cross_region END AS _groupingexpression#600]
+      +- Join Inner, (customer_id#156L = customer_id#180L), rightHint=(strategy=broadcast)
+         :- Project [customer_id#156L, channel#163, status#165, store_region#166]
+         :  +- Filter ((isnotnull(sale_month#171) AND (sale_month#171 >= 2023-01)) AND isnotnull(customer_id#156L))
+         :     +- Relation [transaction_id#155L,customer_id#156L,product_id#157L,store_id#158,sale_date#159,quantity#160,unit_price#161,discount_pct#162,channel#163,payment_method#164,status#165,store_region#166,device_type#167,promo_code#168,receipt_token#169,payment_ref#170,sale_month#171] parquet
+         +- Project [customer_id#180L, customer_region#182]
+            +- Filter ((isnotnull(is_active#186) AND is_active#186) AND isnotnull(customer_id#180L))
+               +- Relation [customer_id#180L,signup_date#181,customer_region#182,segment#183,loyalty_tier#184,age_band#185,is_active#186] parquet
+
+== Physical Plan ==
+AdaptiveSparkPlan isFinalPlan=false
++- Sort [channel#163 ASC NULLS FIRST, region_match#596 ASC NULLS FIRST, status#165 ASC NULLS FIRST], true, 0
+   +- Exchange rangepartitioning(channel#163 ASC NULLS FIRST, region_match#596 ASC NULLS FIRST, status#165 ASC NULLS FIRST, 32), ENSURE_REQUIREMENTS, [plan_id=2213]
+      +- HashAggregate(keys=[channel#163, _groupingexpression#600, status#165], functions=[count(1)], output=[channel#163, region_match#596, status#165, transactions#598L])
+         +- Exchange hashpartitioning(channel#163, _groupingexpression#600, status#165, 32), ENSURE_REQUIREMENTS, [plan_id=2210]
+            +- HashAggregate(keys=[channel#163, _groupingexpression#600, status#165], functions=[partial_count(1)], output=[channel#163, _groupingexpression#600, status#165, count#602L])
+               +- Project [channel#163, status#165, CASE WHEN (store_region#166 = customer_region#182) THEN same_region ELSE cross_region END AS _groupingexpression#600]
+                  +- BroadcastHashJoin [customer_id#156L], [customer_id#180L], Inner, BuildRight, false, false
+                     :- Project [customer_id#156L, channel#163, status#165, store_region#166]
+                     :  +- Filter isnotnull(customer_id#156L)
+                     :     +- FileScan parquet [customer_id#156L,channel#163,status#165,store_region#166,sale_month#171] Batched: true, DataFilters: [isnotnull(customer_id#156L)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/Users/ajr115/Desktop/PySpark Data Processing/data/transactions], PartitionFilters: [isnotnull(sale_month#171), (sale_month#171 >= 2023-01)], PushedFilters: [IsNotNull(customer_id)], ReadSchema: struct<customer_id:bigint,channel:string,status:string,store_region:string>
+                     +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=2205]
+                        +- Project [customer_id#180L, customer_region#182]
+                           +- Filter ((isnotnull(is_active#186) AND is_active#186) AND isnotnull(customer_id#180L))
+                              +- FileScan parquet [customer_id#180L,customer_region#182,is_active#186] Batched: true, DataFilters: [isnotnull(is_active#186), is_active#186, isnotnull(customer_id#180L)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/Users/ajr115/Desktop/PySpark Data Processing/data/customers], PartitionFilters: [], PushedFilters: [IsNotNull(is_active), EqualTo(is_active,true), IsNotNull(customer_id)], ReadSchema: struct<customer_id:bigint,customer_region:string,is_active:boolean>

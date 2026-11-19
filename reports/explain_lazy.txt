@@ -1,0 +1,6 @@
+== Physical Plan ==
+*(1) Project [transaction_id#155L, sale_month#171, status#165, round((cast(quantity#160 as double) * unit_price#161), 2) AS gross_revenue#190]
++- *(1) Filter (isnotnull(status#165) AND (status#165 = COMPLETED))
+   +- *(1) ColumnarToRow
+      +- FileScan parquet [transaction_id#155L,quantity#160,unit_price#161,status#165,sale_month#171] Batched: true, DataFilters: [isnotnull(status#165), (status#165 = COMPLETED)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/Users/ajr115/Desktop/PySpark Data Processing/data/transactions], PartitionFilters: [isnotnull(sale_month#171), (sale_month#171 = 2024-06)], PushedFilters: [IsNotNull(status), EqualTo(status,COMPLETED)], ReadSchema: struct<transaction_id:bigint,quantity:int,unit_price:double,status:string>
+

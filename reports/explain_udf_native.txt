@@ -1,0 +1,19 @@
+== Parsed Logical Plan ==
+'Filter '`=`('status, COMPLETED)
++- Filter (sale_month#171 = 2024-06)
+   +- Relation [transaction_id#155L,customer_id#156L,product_id#157L,store_id#158,sale_date#159,quantity#160,unit_price#161,discount_pct#162,channel#163,payment_method#164,status#165,store_region#166,device_type#167,promo_code#168,receipt_token#169,payment_ref#170,sale_month#171] parquet
+
+== Analyzed Logical Plan ==
+transaction_id: bigint, customer_id: bigint, product_id: bigint, store_id: int, sale_date: date, quantity: int, unit_price: double, discount_pct: double, channel: string, payment_method: string, status: string, store_region: string, device_type: string, promo_code: string, receipt_token: string, payment_ref: string, sale_month: string
+Filter (status#165 = COMPLETED)
++- Filter (sale_month#171 = 2024-06)
+   +- Relation [transaction_id#155L,customer_id#156L,product_id#157L,store_id#158,sale_date#159,quantity#160,unit_price#161,discount_pct#162,channel#163,payment_method#164,status#165,store_region#166,device_type#167,promo_code#168,receipt_token#169,payment_ref#170,sale_month#171] parquet
+
+== Optimized Logical Plan ==
+Filter ((isnotnull(sale_month#171) AND isnotnull(status#165)) AND ((sale_month#171 = 2024-06) AND (status#165 = COMPLETED)))
++- Relation [transaction_id#155L,customer_id#156L,product_id#157L,store_id#158,sale_date#159,quantity#160,unit_price#161,discount_pct#162,channel#163,payment_method#164,status#165,store_region#166,device_type#167,promo_code#168,receipt_token#169,payment_ref#170,sale_month#171] parquet
+
+== Physical Plan ==
+*(1) Filter (isnotnull(status#165) AND (status#165 = COMPLETED))
++- *(1) ColumnarToRow
+   +- FileScan parquet [transaction_id#155L,customer_id#156L,product_id#157L,store_id#158,sale_date#159,quantity#160,unit_price#161,discount_pct#162,channel#163,payment_method#164,status#165,store_region#166,device_type#167,promo_code#168,receipt_token#169,payment_ref#170,sale_month#171] Batched: true, DataFilters: [isnotnull(status#165), (status#165 = COMPLETED)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/Users/ajr115/Desktop/PySpark Data Processing/data/transactions], PartitionFilters: [isnotnull(sale_month#171), (sale_month#171 = 2024-06)], PushedFilters: [IsNotNull(status), EqualTo(status,COMPLETED)], ReadSchema: struct<transaction_id:bigint,customer_id:bigint,product_id:bigint,store_id:int,sale_date:date,qua...

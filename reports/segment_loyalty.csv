@@ -1,0 +1,17 @@
+segment,loyalty_tier,customers,avg_lifetime_net,avg_orders
+consumer,silver,30331,4871.66,14.65
+student,silver,30492,4869.27,14.68
+student,bronze,30230,4866.17,14.67
+student,gold,30603,4859.56,14.66
+premium,silver,30443,4858.21,14.65
+business,platinum,30608,4857.72,14.66
+consumer,bronze,30444,4856.67,14.65
+business,bronze,30200,4856.21,14.64
+student,platinum,30466,4852.21,14.63
+consumer,platinum,30708,4849.97,14.65
+business,silver,30277,4849.36,14.64
+premium,gold,30872,4846.77,14.64
+premium,platinum,30559,4843.87,14.62
+business,gold,30260,4841.91,14.61
+premium,bronze,30565,4840.91,14.63
+consumer,gold,30441,4832.02,14.6

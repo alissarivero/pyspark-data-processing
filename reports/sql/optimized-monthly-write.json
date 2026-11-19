@@ -1,0 +1,922 @@
+{
+  "id": 15,
+  "status": "COMPLETED",
+  "description": "optimized-monthly-write",
+  "planDescription": "== Physical Plan ==\nAdaptiveSparkPlan (59)\n+- == Final Plan ==\n   ResultQueryStage (35), Statistics(sizeInBytes=8.0 EiB)\n   +- Execute InsertIntoHadoopFsRelationCommand (34)\n      +- WriteFiles (33)\n         +- * Sort (32)\n            +- * HashAggregate (31)\n               +- AQEShuffleRead (30), coalesced\n                  +- ShuffleQueryStage (29), Statistics(sizeInBytes=31.2 MiB, rowCount=1.84E+5)\n                     +- Exchange (28)\n                        +- * HashAggregate (27)\n                           +- * HashAggregate (26)\n                              +- AQEShuffleRead (25), coalesced\n                                 +- ShuffleQueryStage (24), Statistics(sizeInBytes=1209.3 MiB, rowCount=7.13E+6)\n                                    +- Exchange (23)\n                                       +- * HashAggregate (22)\n                                          +- * Project (21)\n                                             +- * BroadcastHashJoin Inner BuildRight (20)\n                                                :- * Project (13)\n                                                :  +- * BroadcastHashJoin Inner BuildRight (12)\n                                                :     :- * Project (5)\n                                                :     :  +- * Project (4)\n                                                :     :     +- * Filter (3)\n                                                :     :        +- * ColumnarToRow (2)\n                                                :     :           +- Scan parquet  (1)\n                                                :     +- BroadcastQueryStage (11), Statistics(sizeInBytes=64.2 MiB, rowCount=1.92E+4)\n                                                :        +- BroadcastExchange (10)\n                                                :           +- * Project (9)\n                                                :              +- * Filter (8)\n                                                :                 +- * ColumnarToRow (7)\n                                                :                    +- Scan parquet  (6)\n                                                +- BroadcastQueryStage (19), Statistics(sizeInBytes=67.8 MiB, rowCount=4.88E+5)\n                                                   +- BroadcastExchange (18)\n                                                      +- * Project (17)\n                                                         +- * Filter (16)\n                                                            +- * ColumnarToRow (15)\n                                                               +- Scan parquet  (14)\n+- == Initial Plan ==\n   Execute InsertIntoHadoopFsRelationCommand (58)\n   +- WriteFiles (57)\n      +- Sort (56)\n         +- HashAggregate (55)\n            +- Exchange (54)\n               +- HashAggregate (53)\n                  +- HashAggregate (52)\n                     +- Exchange (51)\n                        +- HashAggregate (50)\n                           +- Project (49)\n                              +- BroadcastHashJoin Inner BuildRight (48)\n                                 :- Project (44)\n                                 :  +- BroadcastHashJoin Inner BuildRight (43)\n                                 :     :- Project (39)\n                                 :     :  +- Project (38)\n                                 :     :     +- Filter (37)\n                                 :     :        +- Scan parquet  (36)\n                                 :     +- BroadcastExchange (42)\n                                 :        +- Project (41)\n                                 :           +- Filter (40)\n                                 :              +- Scan parquet  (6)\n                                 +- BroadcastExchange (47)\n                                    +- Project (46)\n                                       +- Filter (45)\n                                          +- Scan parquet  (14)\n\n\n(1) Scan parquet \nOutput [10]: [customer_id#156L, product_id#157L, sale_date#159, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166, sale_month#171]\nBatched: true\nLocation: InMemoryFileIndex [file:/Users/ajr115/Desktop/PySpark Data Processing/data/transactions]\nPartitionFilters: [isnotnull(sale_month#171), (sale_month#171 >= 2023-01)]\nPushedFilters: [IsNotNull(status), IsNotNull(discount_pct), IsNotNull(quantity), EqualTo(status,COMPLETED), LessThanOrEqual(discount_pct,0.5), GreaterThan(quantity,0), IsNotNull(product_id), IsNotNull(customer_id)]\nReadSchema: struct<customer_id:bigint,product_id:bigint,sale_date:date,quantity:int,unit_price:double,discount_pct:double,channel:string,status:string,store_region:string>\n\n(2) ColumnarToRow [codegen id : 3]\nInput [10]: [customer_id#156L, product_id#157L, sale_date#159, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166, sale_month#171]\n\n(3) Filter [codegen id : 3]\nInput [10]: [customer_id#156L, product_id#157L, sale_date#159, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166, sale_month#171]\nCondition : (((((((isnotnull(status#165) AND isnotnull(discount_pct#162)) AND isnotnull(quantity#160)) AND (status#165 = COMPLETED)) AND (discount_pct#162 <= 0.5)) AND (quantity#160 > 0)) AND isnotnull(product_id#157L)) AND isnotnull(customer_id#156L))\n\n(4) Project [codegen id : 3]\nOutput [10]: [customer_id#156L, product_id#157L, sale_date#159, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, store_region#166, round((cast(quantity#160 as double) * unit_price#161), 2) AS gross_revenue#388]\nInput [10]: [customer_id#156L, product_id#157L, sale_date#159, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166, sale_month#171]\n\n(5) Project [codegen id : 3]\nOutput [11]: [customer_id#156L, product_id#157L, sale_month#171, quantity#160, discount_pct#162, channel#163, store_region#166, gross_revenue#388, round((gross_revenue#388 * (1.0 - discount_pct#162)), 2) AS net_revenue#389, year(sale_date#159) AS sale_year#390, CASE WHEN (unit_price#161 < 25.0) THEN budget WHEN (unit_price#161 < 75.0) THEN mid ELSE premium END AS price_band#391]\nInput [10]: [customer_id#156L, product_id#157L, sale_date#159, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, store_region#166, gross_revenue#388]\n\n(6) Scan parquet \nOutput [4]: [product_id#172L, category#173, subcategory#174, is_active#177]\nBatched: true\nLocation: InMemoryFileIndex [file:/Users/ajr115/Desktop/PySpark Data Processing/data/products]\nPushedFilters: [IsNotNull(is_active), EqualTo(is_active,true), IsNotNull(product_id)]\nReadSchema: struct<product_id:bigint,category:string,subcategory:string,is_active:boolean>\n\n(7) ColumnarToRow [codegen id : 1]\nInput [4]: [product_id#172L, category#173, subcategory#174, is_active#177]\n\n(8) Filter [codegen id : 1]\nInput [4]: [product_id#172L, category#173, subcategory#174, is_active#177]\nCondition : ((isnotnull(is_active#177) AND is_active#177) AND isnotnull(product_id#172L))\n\n(9) Project [codegen id : 1]\nOutput [3]: [product_id#172L, category#173, subcategory#174]\nInput [4]: [product_id#172L, category#173, subcategory#174, is_active#177]\n\n(10) BroadcastExchange\nInput [3]: [product_id#172L, category#173, subcategory#174]\nArguments: HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=1725]\n\n(11) BroadcastQueryStage\nOutput [3]: [product_id#172L, category#173, subcategory#174]\nArguments: 0\n\n(12) BroadcastHashJoin [codegen id : 3]\nLeft keys [1]: [product_id#157L]\nRight keys [1]: [product_id#172L]\nJoin type: Inner\nJoin condition: None\n\n(13) Project [codegen id : 3]\nOutput [12]: [customer_id#156L, sale_month#171, quantity#160, discount_pct#162, channel#163, store_region#166, gross_revenue#388, net_revenue#389, sale_year#390, price_band#391, category#173, subcategory#174]\nInput [14]: [customer_id#156L, product_id#157L, sale_month#171, quantity#160, discount_pct#162, channel#163, store_region#166, gross_revenue#388, net_revenue#389, sale_year#390, price_band#391, product_id#172L, category#173, subcategory#174]\n\n(14) Scan parquet \nOutput [2]: [customer_id#180L, is_active#186]\nBatched: true\nLocation: InMemoryFileIndex [file:/Users/ajr115/Desktop/PySpark Data Processing/data/customers]\nPushedFilters: [IsNotNull(is_active), EqualTo(is_active,true), IsNotNull(customer_id)]\nReadSchema: struct<customer_id:bigint,is_active:boolean>\n\n(15) ColumnarToRow [codegen id : 2]\nInput [2]: [customer_id#180L, is_active#186]\n\n(16) Filter [codegen id : 2]\nInput [2]: [customer_id#180L, is_active#186]\nCondition : ((isnotnull(is_active#186) AND is_active#186) AND isnotnull(customer_id#180L))\n\n(17) Project [codegen id : 2]\nOutput [1]: [customer_id#180L]\nInput [2]: [customer_id#180L, is_active#186]\n\n(18) BroadcastExchange\nInput [1]: [customer_id#180L]\nArguments: HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=1746]\n\n(19) BroadcastQueryStage\nOutput [1]: [customer_id#180L]\nArguments: 1\n\n(20) BroadcastHashJoin [codegen id : 3]\nLeft keys [1]: [customer_id#156L]\nRight keys [1]: [customer_id#180L]\nJoin type: Inner\nJoin condition: None\n\n(21) Project [codegen id : 3]\nOutput [12]: [customer_id#156L, sale_month#171, quantity#160, discount_pct#162, channel#163, store_region#166, gross_revenue#388, net_revenue#389, sale_year#390, price_band#391, category#173, subcategory#174]\nInput [13]: [customer_id#156L, sale_month#171, quantity#160, discount_pct#162, channel#163, store_region#166, gross_revenue#388, net_revenue#389, sale_year#390, price_band#391, category#173, subcategory#174, customer_id#180L]\n\n(22) HashAggregate [codegen id : 3]\nInput [12]: [customer_id#156L, sale_month#171, quantity#160, discount_pct#162, channel#163, store_region#166, gross_revenue#388, net_revenue#389, sale_year#390, price_band#391, category#173, subcategory#174]\nKeys [8]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, customer_id#156L]\nFunctions [5]: [partial_count(1), partial_sum(quantity#160), partial_sum(gross_revenue#388), partial_sum(net_revenue#389), partial_avg(discount_pct#162)]\nAggregate Attributes [5]: [count(1)#418L, sum(quantity#160)#419L, sum(gross_revenue#388)#420, sum(net_revenue#389)#421, avg(discount_pct#162)#422]\nResults [14]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, customer_id#156L, count#425L, sum#427L, sum#429, sum#431, sum#434, count#435L]\n\n(23) Exchange\nInput [14]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, customer_id#156L, count#425L, sum#427L, sum#429, sum#431, sum#434, count#435L]\nArguments: hashpartitioning(sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, customer_id#156L, 32), ENSURE_REQUIREMENTS, [plan_id=1948]\n\n(24) ShuffleQueryStage\nOutput [14]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, customer_id#156L, count#425L, sum#427L, sum#429, sum#431, sum#434, count#435L]\nArguments: 2\n\n(25) AQEShuffleRead\nInput [14]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, customer_id#156L, count#425L, sum#427L, sum#429, sum#431, sum#434, count#435L]\nArguments: coalesced\n\n(26) HashAggregate [codegen id : 4]\nInput [14]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, customer_id#156L, count#425L, sum#427L, sum#429, sum#431, sum#434, count#435L]\nKeys [8]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, customer_id#156L]\nFunctions [5]: [merge_count(1), merge_sum(quantity#160), merge_sum(gross_revenue#388), merge_sum(net_revenue#389), merge_avg(discount_pct#162)]\nAggregate Attributes [5]: [count(1)#418L, sum(quantity#160)#419L, sum(gross_revenue#388)#420, sum(net_revenue#389)#421, avg(discount_pct#162)#422]\nResults [14]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, customer_id#156L, count#425L, sum#427L, sum#429, sum#431, sum#434, count#435L]\n\n(27) HashAggregate [codegen id : 4]\nInput [14]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, customer_id#156L, count#425L, sum#427L, sum#429, sum#431, sum#434, count#435L]\nKeys [7]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391]\nFunctions [6]: [merge_count(1), merge_sum(quantity#160), merge_sum(gross_revenue#388), merge_sum(net_revenue#389), merge_avg(discount_pct#162), partial_count(distinct customer_id#156L)]\nAggregate Attributes [6]: [count(1)#418L, sum(quantity#160)#419L, sum(gross_revenue#388)#420, sum(net_revenue#389)#421, avg(discount_pct#162)#422, count(customer_id#156L)#423L]\nResults [14]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, count#425L, sum#427L, sum#429, sum#431, sum#434, count#435L, count#438L]\n\n(28) Exchange\nInput [14]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, count#425L, sum#427L, sum#429, sum#431, sum#434, count#435L, count#438L]\nArguments: hashpartitioning(sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, 32), ENSURE_REQUIREMENTS, [plan_id=2007]\n\n(29) ShuffleQueryStage\nOutput [14]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, count#425L, sum#427L, sum#429, sum#431, sum#434, count#435L, count#438L]\nArguments: 3\n\n(30) AQEShuffleRead\nInput [14]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, count#425L, sum#427L, sum#429, sum#431, sum#434, count#435L, count#438L]\nArguments: coalesced\n\n(31) HashAggregate [codegen id : 5]\nInput [14]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, count#425L, sum#427L, sum#429, sum#431, sum#434, count#435L, count#438L]\nKeys [7]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391]\nFunctions [6]: [count(1), sum(quantity#160), sum(gross_revenue#388), sum(net_revenue#389), avg(discount_pct#162), count(distinct customer_id#156L)]\nAggregate Attributes [6]: [count(1)#418L, sum(quantity#160)#419L, sum(gross_revenue#388)#420, sum(net_revenue#389)#421, avg(discount_pct#162)#422, count(customer_id#156L)#423L]\nResults [13]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, count(1)#418L AS orders#392L, sum(quantity#160)#419L AS units#393L, round(sum(gross_revenue#388)#420, 2) AS gross_revenue#394, round(sum(net_revenue#389)#421, 2) AS net_revenue#395, round(avg(discount_pct#162)#422, 4) AS avg_discount#396, count(customer_id#156L)#423L AS customers#397L]\n\n(32) Sort [codegen id : 5]\nInput [13]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, orders#392L, units#393L, gross_revenue#394, net_revenue#395, avg_discount#396, customers#397L]\nArguments: [sale_year#390 ASC NULLS FIRST], false, 0\n\n(33) WriteFiles\nInput [13]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, orders#392L, units#393L, gross_revenue#394, net_revenue#395, avg_discount#396, customers#397L]\n\n(34) Execute InsertIntoHadoopFsRelationCommand\nInput: []\nArguments: file:/Users/ajr115/Desktop/PySpark Data Processing/output/monthly_sales, false, [sale_year#390], Parquet, [__partition_columns=[\"sale_year\"], path=/Users/ajr115/Desktop/PySpark Data Processing/output/monthly_sales], Overwrite, [sale_year, sale_month, store_region, category, subcategory, channel, price_band, orders, units, gross_revenue, net_revenue, avg_discount, customers]\n\n(35) ResultQueryStage\nOutput: []\nArguments: 4\n\n(36) Scan parquet \nOutput [10]: [customer_id#156L, product_id#157L, sale_date#159, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166, sale_month#171]\nBatched: true\nLocation: InMemoryFileIndex [file:/Users/ajr115/Desktop/PySpark Data Processing/data/transactions]\nPartitionFilters: [isnotnull(sale_month#171), (sale_month#171 >= 2023-01)]\nPushedFilters: [IsNotNull(status), IsNotNull(discount_pct), IsNotNull(quantity), EqualTo(status,COMPLETED), LessThanOrEqual(discount_pct,0.5), GreaterThan(quantity,0), IsNotNull(product_id), IsNotNull(customer_id)]\nReadSchema: struct<customer_id:bigint,product_id:bigint,sale_date:date,quantity:int,unit_price:double,discount_pct:double,channel:string,status:string,store_region:string>\n\n(37) Filter\nInput [10]: [customer_id#156L, product_id#157L, sale_date#159, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166, sale_month#171]\nCondition : (((((((isnotnull(status#165) AND isnotnull(discount_pct#162)) AND isnotnull(quantity#160)) AND (status#165 = COMPLETED)) AND (discount_pct#162 <= 0.5)) AND (quantity#160 > 0)) AND isnotnull(product_id#157L)) AND isnotnull(customer_id#156L))\n\n(38) Project\nOutput [10]: [customer_id#156L, product_id#157L, sale_date#159, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, store_region#166, round((cast(quantity#160 as double) * unit_price#161), 2) AS gross_revenue#388]\nInput [10]: [customer_id#156L, product_id#157L, sale_date#159, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166, sale_month#171]\n\n(39) Project\nOutput [11]: [customer_id#156L, product_id#157L, sale_month#171, quantity#160, discount_pct#162, channel#163, store_region#166, gross_revenue#388, round((gross_revenue#388 * (1.0 - discount_pct#162)), 2) AS net_revenue#389, year(sale_date#159) AS sale_year#390, CASE WHEN (unit_price#161 < 25.0) THEN budget WHEN (unit_price#161 < 75.0) THEN mid ELSE premium END AS price_band#391]\nInput [10]: [customer_id#156L, product_id#157L, sale_date#159, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, store_region#166, gross_revenue#388]\n\n(40) Filter\nInput [4]: [product_id#172L, category#173, subcategory#174, is_active#177]\nCondition : ((isnotnull(is_active#177) AND is_active#177) AND isnotnull(product_id#172L))\n\n(41) Project\nOutput [3]: [product_id#172L, category#173, subcategory#174]\nInput [4]: [product_id#172L, category#173, subcategory#174, is_active#177]\n\n(42) BroadcastExchange\nInput [3]: [product_id#172L, category#173, subcategory#174]\nArguments: HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=1657]\n\n(43) BroadcastHashJoin\nLeft keys [1]: [product_id#157L]\nRight keys [1]: [product_id#172L]\nJoin type: Inner\nJoin condition: None\n\n(44) Project\nOutput [12]: [customer_id#156L, sale_month#171, quantity#160, discount_pct#162, channel#163, store_region#166, gross_revenue#388, net_revenue#389, sale_year#390, price_band#391, category#173, subcategory#174]\nInput [14]: [customer_id#156L, product_id#157L, sale_month#171, quantity#160, discount_pct#162, channel#163, store_region#166, gross_revenue#388, net_revenue#389, sale_year#390, price_band#391, product_id#172L, category#173, subcategory#174]\n\n(45) Filter\nInput [2]: [customer_id#180L, is_active#186]\nCondition : ((isnotnull(is_active#186) AND is_active#186) AND isnotnull(customer_id#180L))\n\n(46) Project\nOutput [1]: [customer_id#180L]\nInput [2]: [customer_id#180L, is_active#186]\n\n(47) BroadcastExchange\nInput [1]: [customer_id#180L]\nArguments: HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=1661]\n\n(48) BroadcastHashJoin\nLeft keys [1]: [customer_id#156L]\nRight keys [1]: [customer_id#180L]\nJoin type: Inner\nJoin condition: None\n\n(49) Project\nOutput [12]: [customer_id#156L, sale_month#171, quantity#160, discount_pct#162, channel#163, store_region#166, gross_revenue#388, net_revenue#389, sale_year#390, price_band#391, category#173, subcategory#174]\nInput [13]: [customer_id#156L, sale_month#171, quantity#160, discount_pct#162, channel#163, store_region#166, gross_revenue#388, net_revenue#389, sale_year#390, price_band#391, category#173, subcategory#174, customer_id#180L]\n\n(50) HashAggregate\nInput [12]: [customer_id#156L, sale_month#171, quantity#160, discount_pct#162, channel#163, store_region#166, gross_revenue#388, net_revenue#389, sale_year#390, price_band#391, category#173, subcategory#174]\nKeys [8]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, customer_id#156L]\nFunctions [5]: [partial_count(1), partial_sum(quantity#160), partial_sum(gross_revenue#388), partial_sum(net_revenue#389), partial_avg(discount_pct#162)]\nAggregate Attributes [5]: [count(1)#418L, sum(quantity#160)#419L, sum(gross_revenue#388)#420, sum(net_revenue#389)#421, avg(discount_pct#162)#422]\nResults [14]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, customer_id#156L, count#425L, sum#427L, sum#429, sum#431, sum#434, count#435L]\n\n(51) Exchange\nInput [14]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, customer_id#156L, count#425L, sum#427L, sum#429, sum#431, sum#434, count#435L]\nArguments: hashpartitioning(sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, customer_id#156L, 32), ENSURE_REQUIREMENTS, [plan_id=1666]\n\n(52) HashAggregate\nInput [14]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, customer_id#156L, count#425L, sum#427L, sum#429, sum#431, sum#434, count#435L]\nKeys [8]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, customer_id#156L]\nFunctions [5]: [merge_count(1), merge_sum(quantity#160), merge_sum(gross_revenue#388), merge_sum(net_revenue#389), merge_avg(discount_pct#162)]\nAggregate Attributes [5]: [count(1)#418L, sum(quantity#160)#419L, sum(gross_revenue#388)#420, sum(net_revenue#389)#421, avg(discount_pct#162)#422]\nResults [14]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, customer_id#156L, count#425L, sum#427L, sum#429, sum#431, sum#434, count#435L]\n\n(53) HashAggregate\nInput [14]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, customer_id#156L, count#425L, sum#427L, sum#429, sum#431, sum#434, count#435L]\nKeys [7]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391]\nFunctions [6]: [merge_count(1), merge_sum(quantity#160), merge_sum(gross_revenue#388), merge_sum(net_revenue#389), merge_avg(discount_pct#162), partial_count(distinct customer_id#156L)]\nAggregate Attributes [6]: [count(1)#418L, sum(quantity#160)#419L, sum(gross_revenue#388)#420, sum(net_revenue#389)#421, avg(discount_pct#162)#422, count(customer_id#156L)#423L]\nResults [14]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, count#425L, sum#427L, sum#429, sum#431, sum#434, count#435L, count#438L]\n\n(54) Exchange\nInput [14]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, count#425L, sum#427L, sum#429, sum#431, sum#434, count#435L, count#438L]\nArguments: hashpartitioning(sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, 32), ENSURE_REQUIREMENTS, [plan_id=1670]\n\n(55) HashAggregate\nInput [14]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, count#425L, sum#427L, sum#429, sum#431, sum#434, count#435L, count#438L]\nKeys [7]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391]\nFunctions [6]: [count(1), sum(quantity#160), sum(gross_revenue#388), sum(net_revenue#389), avg(discount_pct#162), count(distinct customer_id#156L)]\nAggregate Attributes [6]: [count(1)#418L, sum(quantity#160)#419L, sum(gross_revenue#388)#420, sum(net_revenue#389)#421, avg(discount_pct#162)#422, count(customer_id#156L)#423L]\nResults [13]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, count(1)#418L AS orders#392L, sum(quantity#160)#419L AS units#393L, round(sum(gross_revenue#388)#420, 2) AS gross_revenue#394, round(sum(net_revenue#389)#421, 2) AS net_revenue#395, round(avg(discount_pct#162)#422, 4) AS avg_discount#396, count(customer_id#156L)#423L AS customers#397L]\n\n(56) Sort\nInput [13]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, orders#392L, units#393L, gross_revenue#394, net_revenue#395, avg_discount#396, customers#397L]\nArguments: [sale_year#390 ASC NULLS FIRST], false, 0\n\n(57) WriteFiles\nInput [13]: [sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, orders#392L, units#393L, gross_revenue#394, net_revenue#395, avg_discount#396, customers#397L]\n\n(58) Execute InsertIntoHadoopFsRelationCommand\nInput: []\nArguments: file:/Users/ajr115/Desktop/PySpark Data Processing/output/monthly_sales, false, [sale_year#390], Parquet, [__partition_columns=[\"sale_year\"], path=/Users/ajr115/Desktop/PySpark Data Processing/output/monthly_sales], Overwrite, [sale_year, sale_month, store_region, category, subcategory, channel, price_band, orders, units, gross_revenue, net_revenue, avg_discount, customers]\n\n(59) AdaptiveSparkPlan\nOutput: []\nArguments: isFinalPlan=true\n\n",
+  "submissionTime": "2026-11-19T15:04:51.205GMT",
+  "duration": 15387,
+  "runningJobIds": [],
+  "successJobIds": [
+    37,
+    38,
+    41,
+    39,
+    40
+  ],
+  "failedJobIds": [],
+  "nodes": [
+    {
+      "nodeId": 35,
+      "nodeName": "Scan parquet",
+      "metrics": [
+        {
+          "name": "number of files read",
+          "value": "8"
+        },
+        {
+          "name": "scan time",
+          "value": "total (min, med, max (stageId: taskId))\n366 ms (37 ms, 48 ms, 56 ms (stage 67.0: task 473))"
+        },
+        {
+          "name": "metadata time",
+          "value": "0 ms"
+        },
+        {
+          "name": "size of files read",
+          "value": "2.6 MiB"
+        },
+        {
+          "name": "number of output rows",
+          "value": "500,000"
+        }
+      ],
+      "desc": "FileScan parquet [customer_id#180L,is_active#186] Batched: true, DataFilters: [isnotnull(is_active#186), is_active#186, isnotnull(customer_id#180L)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/Users/ajr115/Desktop/PySpark Data Processing/data/customers], PartitionFilters: [], PushedFilters: [IsNotNull(is_active), EqualTo(is_active,true), IsNotNull(customer_id)], ReadSchema: struct<customer_id:bigint,is_active:boolean>"
+    },
+    {
+      "nodeId": 34,
+      "nodeName": "ColumnarToRow",
+      "wholeStageCodegenId": 2,
+      "metrics": [
+        {
+          "name": "number of output rows",
+          "value": "500,000"
+        },
+        {
+          "name": "number of input batches",
+          "value": "128"
+        }
+      ],
+      "desc": "ColumnarToRow"
+    },
+    {
+      "nodeId": 33,
+      "nodeName": "Filter",
+      "wholeStageCodegenId": 2,
+      "metrics": [
+        {
+          "name": "number of output rows",
+          "value": "487,500"
+        }
+      ],
+      "desc": "Filter ((isnotnull(is_active#186) AND is_active#186) AND isnotnull(customer_id#180L))"
+    },
+    {
+      "nodeId": 32,
+      "nodeName": "Project",
+      "wholeStageCodegenId": 2,
+      "metrics": [],
+      "desc": "Project [customer_id#180L]"
+    },
+    {
+      "nodeId": 31,
+      "nodeName": "WholeStageCodegen (2)",
+      "metrics": [
+        {
+          "name": "duration",
+          "value": "total (min, med, max (stageId: taskId))\n1.4 s (150 ms, 181 ms, 190 ms (stage 67.0: task 478))"
+        }
+      ],
+      "desc": "WholeStageCodegen (2)"
+    },
+    {
+      "nodeId": 30,
+      "nodeName": "BroadcastExchange",
+      "metrics": [
+        {
+          "name": "time to broadcast",
+          "value": "22 ms"
+        },
+        {
+          "name": "time to build",
+          "value": "200 ms"
+        },
+        {
+          "name": "time to collect",
+          "value": "299 ms"
+        },
+        {
+          "name": "number of output rows",
+          "value": "487,500"
+        },
+        {
+          "name": "data size",
+          "value": "67.8 MiB"
+        }
+      ],
+      "desc": "BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=1746]"
+    },
+    {
+      "nodeId": 29,
+      "nodeName": "Scan parquet",
+      "metrics": [
+        {
+          "name": "number of files read",
+          "value": "8"
+        },
+        {
+          "name": "scan time",
+          "value": "total (min, med, max (stageId: taskId))\n125 ms (11 ms, 17 ms, 22 ms (stage 66.0: task 465))"
+        },
+        {
+          "name": "metadata time",
+          "value": "0 ms"
+        },
+        {
+          "name": "size of files read",
+          "value": "105.3 KiB"
+        },
+        {
+          "name": "number of output rows",
+          "value": "20,000"
+        }
+      ],
+      "desc": "FileScan parquet [product_id#172L,category#173,subcategory#174,is_active#177] Batched: true, DataFilters: [isnotnull(is_active#177), is_active#177, isnotnull(product_id#172L)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/Users/ajr115/Desktop/PySpark Data Processing/data/products], PartitionFilters: [], PushedFilters: [IsNotNull(is_active), EqualTo(is_active,true), IsNotNull(product_id)], ReadSchema: struct<product_id:bigint,category:string,subcategory:string,is_active:boolean>"
+    },
+    {
+      "nodeId": 28,
+      "nodeName": "ColumnarToRow",
+      "wholeStageCodegenId": 1,
+      "metrics": [
+        {
+          "name": "number of output rows",
+          "value": "20,000"
+        },
+        {
+          "name": "number of input batches",
+          "value": "8"
+        }
+      ],
+      "desc": "ColumnarToRow"
+    },
+    {
+      "nodeId": 27,
+      "nodeName": "Filter",
+      "wholeStageCodegenId": 1,
+      "metrics": [
+        {
+          "name": "number of output rows",
+          "value": "19,200"
+        }
+      ],
+      "desc": "Filter ((isnotnull(is_active#177) AND is_active#177) AND isnotnull(product_id#172L))"
+    },
+    {
+      "nodeId": 26,
+      "nodeName": "Project",
+      "wholeStageCodegenId": 1,
+      "metrics": [],
+      "desc": "Project [product_id#172L, category#173, subcategory#174]"
+    },
+    {
+      "nodeId": 25,
+      "nodeName": "WholeStageCodegen (1)",
+      "metrics": [
+        {
+          "name": "duration",
+          "value": "total (min, med, max (stageId: taskId))\n189 ms (17 ms, 26 ms, 33 ms (stage 66.0: task 471))"
+        }
+      ],
+      "desc": "WholeStageCodegen (1)"
+    },
+    {
+      "nodeId": 24,
+      "nodeName": "BroadcastExchange",
+      "metrics": [
+        {
+          "name": "time to broadcast",
+          "value": "24 ms"
+        },
+        {
+          "name": "time to build",
+          "value": "141 ms"
+        },
+        {
+          "name": "time to collect",
+          "value": "112 ms"
+        },
+        {
+          "name": "number of output rows",
+          "value": "19,200"
+        },
+        {
+          "name": "data size",
+          "value": "64.2 MiB"
+        }
+      ],
+      "desc": "BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=1725]"
+    },
+    {
+      "nodeId": 23,
+      "nodeName": "Scan parquet",
+      "metrics": [
+        {
+          "name": "number of files read",
+          "value": "144"
+        },
+        {
+          "name": "scan time",
+          "value": "total (min, med, max (stageId: taskId))\n5.8 s (23 ms, 76 ms, 237 ms (stage 68.0: task 495))"
+        },
+        {
+          "name": "dynamic partition pruning time",
+          "value": "0 ms"
+        },
+        {
+          "name": "metadata time",
+          "value": "0 ms"
+        },
+        {
+          "name": "size of files read",
+          "value": "747.2 MiB"
+        },
+        {
+          "name": "number of output rows",
+          "value": "9,495,016"
+        },
+        {
+          "name": "number of partitions read",
+          "value": "24"
+        }
+      ],
+      "desc": "FileScan parquet [customer_id#156L,product_id#157L,sale_date#159,quantity#160,unit_price#161,discount_pct#162,channel#163,status#165,store_region#166,sale_month#171] Batched: true, DataFilters: [isnotnull(status#165), isnotnull(discount_pct#162), isnotnull(quantity#160), (status#165 = COMPL..., Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/Users/ajr115/Desktop/PySpark Data Processing/data/transactions], PartitionFilters: [isnotnull(sale_month#171), (sale_month#171 >= 2023-01)], PushedFilters: [IsNotNull(status), IsNotNull(discount_pct), IsNotNull(quantity), EqualTo(status,COMPLETED), Less..., ReadSchema: struct<customer_id:bigint,product_id:bigint,sale_date:date,quantity:int,unit_price:double,discoun..."
+    },
+    {
+      "nodeId": 22,
+      "nodeName": "ColumnarToRow",
+      "wholeStageCodegenId": 3,
+      "metrics": [
+        {
+          "name": "number of output rows",
+          "value": "9,495,016"
+        },
+        {
+          "name": "number of input batches",
+          "value": "2,388"
+        }
+      ],
+      "desc": "ColumnarToRow"
+    },
+    {
+      "nodeId": 21,
+      "nodeName": "Filter",
+      "wholeStageCodegenId": 3,
+      "metrics": [
+        {
+          "name": "number of output rows",
+          "value": "7,624,901"
+        }
+      ],
+      "desc": "Filter (((((((isnotnull(status#165) AND isnotnull(discount_pct#162)) AND isnotnull(quantity#160)) AND (status#165 = COMPLETED)) AND (discount_pct#162 <= 0.5)) AND (quantity#160 > 0)) AND isnotnull(product_id#157L)) AND isnotnull(customer_id#156L))"
+    },
+    {
+      "nodeId": 20,
+      "nodeName": "Project",
+      "wholeStageCodegenId": 3,
+      "metrics": [],
+      "desc": "Project [customer_id#156L, product_id#157L, sale_date#159, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, store_region#166, round((cast(quantity#160 as double) * unit_price#161), 2) AS gross_revenue#388]"
+    },
+    {
+      "nodeId": 19,
+      "nodeName": "Project",
+      "wholeStageCodegenId": 3,
+      "metrics": [],
+      "desc": "Project [customer_id#156L, product_id#157L, sale_month#171, quantity#160, discount_pct#162, channel#163, store_region#166, gross_revenue#388, round((gross_revenue#388 * (1.0 - discount_pct#162)), 2) AS net_revenue#389, year(sale_date#159) AS sale_year#390, CASE WHEN (unit_price#161 < 25.0) THEN budget WHEN (unit_price#161 < 75.0) THEN mid ELSE premium END AS price_band#391]"
+    },
+    {
+      "nodeId": 18,
+      "nodeName": "BroadcastHashJoin",
+      "wholeStageCodegenId": 3,
+      "metrics": [
+        {
+          "name": "number of output rows",
+          "value": "7,320,222"
+        }
+      ],
+      "desc": "BroadcastHashJoin [product_id#157L], [product_id#172L], Inner, BuildRight, false, false"
+    },
+    {
+      "nodeId": 17,
+      "nodeName": "Project",
+      "wholeStageCodegenId": 3,
+      "metrics": [],
+      "desc": "Project [customer_id#156L, sale_month#171, quantity#160, discount_pct#162, channel#163, store_region#166, gross_revenue#388, net_revenue#389, sale_year#390, price_band#391, category#173, subcategory#174]"
+    },
+    {
+      "nodeId": 16,
+      "nodeName": "BroadcastHashJoin",
+      "wholeStageCodegenId": 3,
+      "metrics": [
+        {
+          "name": "number of output rows",
+          "value": "7,137,692"
+        }
+      ],
+      "desc": "BroadcastHashJoin [customer_id#156L], [customer_id#180L], Inner, BuildRight, false, false"
+    },
+    {
+      "nodeId": 15,
+      "nodeName": "Project",
+      "wholeStageCodegenId": 3,
+      "metrics": [],
+      "desc": "Project [customer_id#156L, sale_month#171, quantity#160, discount_pct#162, channel#163, store_region#166, gross_revenue#388, net_revenue#389, sale_year#390, price_band#391, category#173, subcategory#174]"
+    },
+    {
+      "nodeId": 14,
+      "nodeName": "HashAggregate",
+      "wholeStageCodegenId": 3,
+      "metrics": [
+        {
+          "name": "spill size",
+          "value": "0.0 B"
+        },
+        {
+          "name": "time in aggregation build",
+          "value": "total (min, med, max (stageId: taskId))\n36.7 s (186 ms, 499 ms, 935 ms (stage 68.0: task 485))"
+        },
+        {
+          "name": "peak memory",
+          "value": "total (min, med, max (stageId: taskId))\n1210.0 MiB (16.2 MiB, 18.0 MiB, 18.0 MiB (stage 68.0: task 482))"
+        },
+        {
+          "name": "number of output rows",
+          "value": "7,134,994"
+        },
+        {
+          "name": "number of sort fallback tasks",
+          "value": "0"
+        },
+        {
+          "name": "avg hash probes per key",
+          "value": "(min, med, max (stageId: taskId)):\n(1.1, 1.5, 1.6 (stage 68.0: task 487))"
+        }
+      ],
+      "desc": "HashAggregate(keys=[sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, customer_id#156L], functions=[partial_count(1), partial_sum(quantity#160), partial_sum(gross_revenue#388), partial_sum(net_revenue#389), partial_avg(discount_pct#162)])"
+    },
+    {
+      "nodeId": 13,
+      "nodeName": "WholeStageCodegen (3)",
+      "metrics": [
+        {
+          "name": "duration",
+          "value": "total (min, med, max (stageId: taskId))\n54.6 s (302 ms, 763 ms, 1.4 s (stage 68.0: task 488))"
+        }
+      ],
+      "desc": "WholeStageCodegen (3)"
+    },
+    {
+      "nodeId": 12,
+      "nodeName": "Exchange",
+      "metrics": [
+        {
+          "name": "shuffle records written",
+          "value": "7,134,994"
+        },
+        {
+          "name": "remote merged reqs duration",
+          "value": "0 ms"
+        },
+        {
+          "name": "remote merged blocks fetched",
+          "value": "0"
+        },
+        {
+          "name": "records read",
+          "value": "7,134,994"
+        },
+        {
+          "name": "local bytes read",
+          "value": "total (min, med, max (stageId: taskId))\n421.9 MiB (13.2 MiB, 39.6 MiB, 52.8 MiB (stage 70.0: task 549))"
+        },
+        {
+          "name": "merged fetch fallback count",
+          "value": "0"
+        },
+        {
+          "name": "local blocks read",
+          "value": "680"
+        },
+        {
+          "name": "remote merged chunks fetched",
+          "value": "0"
+        },
+        {
+          "name": "remote blocks read",
+          "value": "0"
+        },
+        {
+          "name": "data size",
+          "value": "total (min, med, max (stageId: taskId))\n1209.3 MiB (10.1 MiB, 18.6 MiB, 19.3 MiB (stage 68.0: task 481))"
+        },
+        {
+          "name": "local merged bytes read",
+          "value": "0.0 B"
+        },
+        {
+          "name": "local merged chunks fetched",
+          "value": "0"
+        },
+        {
+          "name": "shuffle write time",
+          "value": "total (min, med, max (stageId: taskId))\n5.2 s (13 ms, 76 ms, 160 ms (stage 68.0: task 510))"
+        },
+        {
+          "name": "remote merged bytes read",
+          "value": "0.0 B"
+        },
+        {
+          "name": "local merged blocks fetched",
+          "value": "0"
+        },
+        {
+          "name": "corrupt merged block chunks",
+          "value": "0"
+        },
+        {
+          "name": "fetch wait time",
+          "value": "total (min, med, max (stageId: taskId))\n0 ms (0 ms, 0 ms, 0 ms (stage 70.0: task 549))"
+        },
+        {
+          "name": "remote bytes read",
+          "value": "0.0 B"
+        },
+        {
+          "name": "number of partitions",
+          "value": "32"
+        },
+        {
+          "name": "remote reqs duration",
+          "value": "0 ms"
+        },
+        {
+          "name": "remote bytes read to disk",
+          "value": "0.0 B"
+        },
+        {
+          "name": "shuffle bytes written",
+          "value": "total (min, med, max (stageId: taskId))\n421.9 MiB (3.5 MiB, 6.5 MiB, 6.7 MiB (stage 68.0: task 481))"
+        }
+      ],
+      "desc": "Exchange hashpartitioning(sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, customer_id#156L, 32), ENSURE_REQUIREMENTS, [plan_id=1948]"
+    },
+    {
+      "nodeId": 11,
+      "nodeName": "AQEShuffleRead",
+      "metrics": [
+        {
+          "name": "number of partitions",
+          "value": "10"
+        },
+        {
+          "name": "number of empty partitions",
+          "value": "0"
+        },
+        {
+          "name": "partition data size",
+          "value": "total (min, med, max (stageId: taskId))\n440.6 MiB (13.7 MiB, 41.4 MiB, 55.1 MiB (driver))"
+        },
+        {
+          "name": "number of coalesced partitions",
+          "value": "9"
+        }
+      ],
+      "desc": "AQEShuffleRead coalesced"
+    },
+    {
+      "nodeId": 10,
+      "nodeName": "HashAggregate",
+      "wholeStageCodegenId": 4,
+      "metrics": [
+        {
+          "name": "spill size",
+          "value": "0.0 B"
+        },
+        {
+          "name": "time in aggregation build",
+          "value": "total (min, med, max (stageId: taskId))\n22.1 s (743 ms, 2.2 s, 2.9 s (stage 70.0: task 556))"
+        },
+        {
+          "name": "peak memory",
+          "value": "total (min, med, max (stageId: taskId))\n1608.0 MiB (40.0 MiB, 160.0 MiB, 192.0 MiB (stage 70.0: task 549))"
+        },
+        {
+          "name": "number of output rows",
+          "value": "7,124,694"
+        },
+        {
+          "name": "number of sort fallback tasks",
+          "value": "0"
+        },
+        {
+          "name": "avg hash probes per key",
+          "value": "(min, med, max (stageId: taskId)):\n(1.6, 1.6, 1.6 (stage 70.0: task 549))"
+        }
+      ],
+      "desc": "HashAggregate(keys=[sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, customer_id#156L], functions=[merge_count(1), merge_sum(quantity#160), merge_sum(gross_revenue#388), merge_sum(net_revenue#389), merge_avg(discount_pct#162)])"
+    },
+    {
+      "nodeId": 9,
+      "nodeName": "HashAggregate",
+      "wholeStageCodegenId": 4,
+      "metrics": [
+        {
+          "name": "spill size",
+          "value": "0.0 B"
+        },
+        {
+          "name": "time in aggregation build",
+          "value": "total (min, med, max (stageId: taskId))\n34.9 s (920 ms, 3.6 s, 4.4 s (stage 70.0: task 556))"
+        },
+        {
+          "name": "peak memory",
+          "value": "total (min, med, max (stageId: taskId))\n162.5 MiB (16.2 MiB, 16.2 MiB, 16.2 MiB (stage 70.0: task 554))"
+        },
+        {
+          "name": "number of output rows",
+          "value": "184,086"
+        },
+        {
+          "name": "number of sort fallback tasks",
+          "value": "0"
+        },
+        {
+          "name": "avg hash probes per key",
+          "value": "(min, med, max (stageId: taskId)):\n(1, 1, 1 (stage 70.0: task 554))"
+        }
+      ],
+      "desc": "HashAggregate(keys=[sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391], functions=[merge_count(1), merge_sum(quantity#160), merge_sum(gross_revenue#388), merge_sum(net_revenue#389), merge_avg(discount_pct#162), partial_count(distinct customer_id#156L)])"
+    },
+    {
+      "nodeId": 8,
+      "nodeName": "WholeStageCodegen (4)",
+      "metrics": [
+        {
+          "name": "duration",
+          "value": "total (min, med, max (stageId: taskId))\n35.5 s (949 ms, 3.8 s, 4.4 s (stage 70.0: task 555))"
+        }
+      ],
+      "desc": "WholeStageCodegen (4)"
+    },
+    {
+      "nodeId": 7,
+      "nodeName": "Exchange",
+      "metrics": [
+        {
+          "name": "shuffle records written",
+          "value": "184,086"
+        },
+        {
+          "name": "remote merged reqs duration",
+          "value": "0 ms"
+        },
+        {
+          "name": "remote merged blocks fetched",
+          "value": "0"
+        },
+        {
+          "name": "records read",
+          "value": "184,086"
+        },
+        {
+          "name": "local bytes read",
+          "value": "total (min, med, max (stageId: taskId))\n12.6 MiB (1211.1 KiB, 1616.4 KiB, 2.0 MiB (stage 73.0: task 566))"
+        },
+        {
+          "name": "merged fetch fallback count",
+          "value": "0"
+        },
+        {
+          "name": "local blocks read",
+          "value": "80"
+        },
+        {
+          "name": "remote merged chunks fetched",
+          "value": "0"
+        },
+        {
+          "name": "remote blocks read",
+          "value": "0"
+        },
+        {
+          "name": "data size",
+          "value": "total (min, med, max (stageId: taskId))\n31.2 MiB (3.1 MiB, 3.1 MiB, 3.1 MiB (stage 70.0: task 554))"
+        },
+        {
+          "name": "local merged bytes read",
+          "value": "0.0 B"
+        },
+        {
+          "name": "local merged chunks fetched",
+          "value": "0"
+        },
+        {
+          "name": "shuffle write time",
+          "value": "total (min, med, max (stageId: taskId))\n202 ms (7 ms, 20 ms, 41 ms (stage 70.0: task 551))"
+        },
+        {
+          "name": "remote merged bytes read",
+          "value": "0.0 B"
+        },
+        {
+          "name": "local merged blocks fetched",
+          "value": "0"
+        },
+        {
+          "name": "corrupt merged block chunks",
+          "value": "0"
+        },
+        {
+          "name": "fetch wait time",
+          "value": "total (min, med, max (stageId: taskId))\n0 ms (0 ms, 0 ms, 0 ms (stage 73.0: task 559))"
+        },
+        {
+          "name": "remote bytes read",
+          "value": "0.0 B"
+        },
+        {
+          "name": "number of partitions",
+          "value": "32"
+        },
+        {
+          "name": "remote reqs duration",
+          "value": "0 ms"
+        },
+        {
+          "name": "remote bytes read to disk",
+          "value": "0.0 B"
+        },
+        {
+          "name": "shuffle bytes written",
+          "value": "total (min, med, max (stageId: taskId))\n12.6 MiB (1250.7 KiB, 1296.7 KiB, 1298.2 KiB (stage 70.0: task 549))"
+        }
+      ],
+      "desc": "Exchange hashpartitioning(sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, 32), ENSURE_REQUIREMENTS, [plan_id=2007]"
+    },
+    {
+      "nodeId": 6,
+      "nodeName": "AQEShuffleRead",
+      "metrics": [
+        {
+          "name": "number of partitions",
+          "value": "8"
+        },
+        {
+          "name": "number of empty partitions",
+          "value": "0"
+        },
+        {
+          "name": "partition data size",
+          "value": "total (min, med, max (stageId: taskId))\n13.3 MiB (1297.0 KiB, 1689.0 KiB, 2.2 MiB (driver))"
+        },
+        {
+          "name": "number of coalesced partitions",
+          "value": "8"
+        }
+      ],
+      "desc": "AQEShuffleRead coalesced"
+    },
+    {
+      "nodeId": 5,
+      "nodeName": "HashAggregate",
+      "wholeStageCodegenId": 5,
+      "metrics": [
+        {
+          "name": "spill size",
+          "value": "0.0 B"
+        },
+        {
+          "name": "time in aggregation build",
+          "value": "total (min, med, max (stageId: taskId))\n712 ms (57 ms, 93 ms, 115 ms (stage 73.0: task 559))"
+        },
+        {
+          "name": "peak memory",
+          "value": "total (min, med, max (stageId: taskId))\n130.0 MiB (16.2 MiB, 16.2 MiB, 16.2 MiB (stage 73.0: task 559))"
+        },
+        {
+          "name": "number of output rows",
+          "value": "18,432"
+        },
+        {
+          "name": "number of sort fallback tasks",
+          "value": "0"
+        },
+        {
+          "name": "avg hash probes per key",
+          "value": "(min, med, max (stageId: taskId)):\n(1, 1, 1.1 (stage 73.0: task 566))"
+        }
+      ],
+      "desc": "HashAggregate(keys=[sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391], functions=[count(1), sum(quantity#160), sum(gross_revenue#388), sum(net_revenue#389), avg(discount_pct#162), count(distinct customer_id#156L)])"
+    },
+    {
+      "nodeId": 4,
+      "nodeName": "Sort",
+      "wholeStageCodegenId": 5,
+      "metrics": [
+        {
+          "name": "sort time",
+          "value": "total (min, med, max (stageId: taskId))\n0 ms (0 ms, 0 ms, 0 ms (stage 73.0: task 559))"
+        },
+        {
+          "name": "peak memory",
+          "value": "total (min, med, max (stageId: taskId))\n128.9 MiB (16.1 MiB, 16.1 MiB, 16.1 MiB (stage 73.0: task 559))"
+        },
+        {
+          "name": "spill size",
+          "value": "total (min, med, max (stageId: taskId))\n0.0 B (0.0 B, 0.0 B, 0.0 B (stage 73.0: task 559))"
+        }
+      ],
+      "desc": "Sort [sale_year#390 ASC NULLS FIRST], false, 0"
+    },
+    {
+      "nodeId": 3,
+      "nodeName": "WholeStageCodegen (5)",
+      "metrics": [
+        {
+          "name": "duration",
+          "value": "total (min, med, max (stageId: taskId))\n4.8 s (564 ms, 614 ms, 629 ms (stage 73.0: task 563))"
+        }
+      ],
+      "desc": "WholeStageCodegen (5)"
+    },
+    {
+      "nodeId": 2,
+      "nodeName": "WriteFiles",
+      "metrics": [],
+      "desc": "WriteFiles"
+    },
+    {
+      "nodeId": 1,
+      "nodeName": "Execute InsertIntoHadoopFsRelationCommand",
+      "metrics": [
+        {
+          "name": "task commit time",
+          "value": "total (min, med, max (stageId: taskId))\n6 ms (0 ms, 1 ms, 1 ms (stage 73.0: task 559))"
+        },
+        {
+          "name": "number of written files",
+          "value": "16"
+        },
+        {
+          "name": "job commit time",
+          "value": "45 ms"
+        },
+        {
+          "name": "number of output rows",
+          "value": "18,432"
+        },
+        {
+          "name": "number of dynamic part",
+          "value": "2"
+        },
+        {
+          "name": "written output",
+          "value": "500.4 KiB"
+        }
+      ],
+      "desc": "Execute InsertIntoHadoopFsRelationCommand file:/Users/ajr115/Desktop/PySpark Data Processing/output/monthly_sales, false, [sale_year#390], Parquet, [__partition_columns=[\"sale_year\"], path=/Users/ajr115/Desktop/PySpark Data Processing/output/monthly_sales], Overwrite, [sale_year, sale_month, store_region, category, subcategory, channel, price_band, orders, units, gross_revenue, net_revenue, avg_discount, customers]"
+    },
+    {
+      "nodeId": 0,
+      "nodeName": "AdaptiveSparkPlan",
+      "metrics": [],
+      "desc": "AdaptiveSparkPlan isFinalPlan=true"
+    }
+  ],
+  "edges": [
+    {
+      "fromId": 1,
+      "toId": 0
+    },
+    {
+      "fromId": 2,
+      "toId": 1
+    },
+    {
+      "fromId": 4,
+      "toId": 2
+    },
+    {
+      "fromId": 5,
+      "toId": 4
+    },
+    {
+      "fromId": 6,
+      "toId": 5
+    },
+    {
+      "fromId": 7,
+      "toId": 6
+    },
+    {
+      "fromId": 9,
+      "toId": 7
+    },
+    {
+      "fromId": 10,
+      "toId": 9
+    },
+    {
+      "fromId": 11,
+      "toId": 10
+    },
+    {
+      "fromId": 12,
+      "toId": 11
+    },
+    {
+      "fromId": 14,
+      "toId": 12
+    },
+    {
+      "fromId": 15,
+      "toId": 14
+    },
+    {
+      "fromId": 16,
+      "toId": 15
+    },
+    {
+      "fromId": 17,
+      "toId": 16
+    },
+    {
+      "fromId": 18,
+      "toId": 17
+    },
+    {
+      "fromId": 19,
+      "toId": 18
+    },
+    {
+      "fromId": 20,
+      "toId": 19
+    },
+    {
+      "fromId": 21,
+      "toId": 20
+    },
+    {
+      "fromId": 22,
+      "toId": 21
+    },
+    {
+      "fromId": 23,
+      "toId": 22
+    },
+    {
+      "fromId": 24,
+      "toId": 18
+    },
+    {
+      "fromId": 26,
+      "toId": 24
+    },
+    {
+      "fromId": 27,
+      "toId": 26
+    },
+    {
+      "fromId": 28,
+      "toId": 27
+    },
+    {
+      "fromId": 29,
+      "toId": 28
+    },
+    {
+      "fromId": 30,
+      "toId": 16
+    },
+    {
+      "fromId": 32,
+      "toId": 30
+    },
+    {
+      "fromId": 33,
+      "toId": 32
+    },
+    {
+      "fromId": 34,
+      "toId": 33
+    },
+    {
+      "fromId": 35,
+      "toId": 34
+    }
+  ],
+  "queryId": "01a1f456-cb05-7ad1-9ca5-32d39562fdec",
+  "errorMessage": "",
+  "rootExecutionId": 15,
+  "modifiedConfigs": {
+    "spark.sql.adaptive.autoBroadcastJoinThreshold": "-1"
+  }
+}

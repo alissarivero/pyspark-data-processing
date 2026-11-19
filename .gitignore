@@ -1,0 +1,16 @@
+.venv/
+.tools/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
+
+# Generated dataset and Spark scratch are large; recreate them with pyspark_pipeline.py
+data/
+output/
+spark-events/
+spark-local/
+
+# Live-UI handshakes
+reports/SPARK_UI_READY
+reports/SPARK_UI_STOP

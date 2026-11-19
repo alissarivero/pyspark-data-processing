@@ -1,0 +1,829 @@
+{
+  "spark_version": "4.3.0",
+  "java_version": "21.0.13.1",
+  "master": "local[*]",
+  "default_parallelism": 8,
+  "application_id": "local-1795100616806",
+  "ui": "http://127.0.0.1:4040",
+  "dataset": {
+    "generated_at": "2026-11-19T15:04:32.351819+00:00",
+    "transactions_rows": 14244500,
+    "transactions_bytes": 1184630303,
+    "customers_rows": 500000,
+    "customers_bytes": 2714383,
+    "products_rows": 20000,
+    "products_bytes": 108729,
+    "bytes_per_row": 83.16404949278669,
+    "probe_bytes_per_row": 85.480235,
+    "months": [
+      "2022-01",
+      "2022-02",
+      "2022-03",
+      "2022-04",
+      "2022-05",
+      "2022-06",
+      "2022-07",
+      "2022-08",
+      "2022-09",
+      "2022-10",
+      "2022-11",
+      "2022-12",
+      "2023-01",
+      "2023-02",
+      "2023-03",
+      "2023-04",
+      "2023-05",
+      "2023-06",
+      "2023-07",
+      "2023-08",
+      "2023-09",
+      "2023-10",
+      "2023-11",
+      "2023-12",
+      "2024-01",
+      "2024-02",
+      "2024-03",
+      "2024-04",
+      "2024-05",
+      "2024-06",
+      "2024-07",
+      "2024-08",
+      "2024-09",
+      "2024-10",
+      "2024-11",
+      "2024-12"
+    ],
+    "target_bytes": 1127428915,
+    "limited_by_disk": false,
+    "partitioned_by": "sale_month",
+    "planted_signals": [
+      "In-store purchases are assigned the customer's home region. Web, app, and marketplace purchases use an independent fulfillment region, so cross-region sales concentrate outside the store channel.",
+      "A row is more likely to be cancelled when the channel is marketplace, the discount is 20% or 60%, or the quantity is 4 or 5.",
+      "Roughly 2% of fact rows carry a 60% discount. The revenue pipeline drops those rows with a native filter.",
+      "Sale dates cover 2022-01 through 2024-12. Revenue queries keep sale_month >= 2023-01, so the 2022 partition directories should not be read."
+    ],
+    "total_bytes": 1187453415
+  },
+  "lazy": {
+    "month": "2024-06",
+    "columns": [
+      "transaction_id",
+      "sale_month",
+      "status",
+      "gross_revenue"
+    ],
+    "build_seconds": 0.0426,
+    "action_seconds": 0.3298,
+    "jobs_before": 20,
+    "jobs_after_transform": 20,
+    "jobs_after_explain": 20,
+    "jobs_after_action": 22,
+    "rows": 318813
+  },
+  "pruning": {
+    "month_rows": 9495016,
+    "date_rows": 9495016,
+    "month_seconds": 0.368,
+    "date_seconds": 0.533,
+    "month_highlights": "'Filter '`>=`('sale_month, 2023-01)\nFilter (sale_month#171 >= 2023-01)\nFilter (isnotnull(sale_month#171) AND (sale_month#171 >= 2023-01))\n*(1) ColumnarToRow\n+- FileScan parquet [transaction_id#155L,customer_id#156L,product_id#157L,store_id#158,sale_date#159,quantity#160,unit_price#161,discount_pct#162,channel#163,payment_method#164,status#165,store_region#166,device_type#167,promo_code#168,receipt_token#169,payment_ref#170,sale_month#171] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/Users/ajr115/Desktop/PySpark Data Processing/data/transactions], PartitionFilters: [isnotnull(sale_month#171), (sale_month#171 >= 2023-01)], PushedFilters: [], ReadSchema: struct<transaction_id:bigint,customer_id:bigint,product_id:bigint,store_id:int,sale_date:date,qua...",
+    "date_highlights": "'Filter '`>=`('sale_date, cast(2023-01-01 as date))\nFilter (sale_date#159 >= cast(2023-01-01 as date))\nFilter (isnotnull(sale_date#159) AND (sale_date#159 >= 2023-01-01))\n*(1) Filter (isnotnull(sale_date#159) AND (sale_date#159 >= 2023-01-01))\n+- *(1) ColumnarToRow\n   +- FileScan parquet [transaction_id#155L,customer_id#156L,product_id#157L,store_id#158,sale_date#159,quantity#160,unit_price#161,discount_pct#162,channel#163,payment_method#164,status#165,store_region#166,device_type#167,promo_code#168,receipt_token#169,payment_ref#170,sale_month#171] Batched: true, DataFilters: [isnotnull(sale_date#159), (sale_date#159 >= 2023-01-01)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/Users/ajr115/Desktop/PySpark Data Processing/data/transactions], PartitionFilters: [], PushedFilters: [IsNotNull(sale_date), GreaterThanOrEqual(sale_date,2023-01-01)], ReadSchema: struct<transaction_id:bigint,customer_id:bigint,product_id:bigint,store_id:int,sale_date:date,qua...",
+    "month_sql": [
+      "Scan parquet: number of files read = 144",
+      "Scan parquet: scan time = total (min, med, max (stageId: taskId))\n1.1 s (3 ms, 10 ms, 93 ms (stage 30.0: task 227))",
+      "Scan parquet: dynamic partition pruning time = 0 ms",
+      "Scan parquet: metadata time = 0 ms",
+      "Scan parquet: size of files read = 747.2 MiB",
+      "Scan parquet: number of output rows = 9,495,016",
+      "Scan parquet: number of partitions read = 24",
+      "ColumnarToRow: number of output rows = 9,495,016",
+      "ColumnarToRow: number of input batches = 2,388",
+      "HashAggregate: time in aggregation build = total (min, med, max (stageId: taskId))\n1.3 s (4 ms, 13 ms, 104 ms (stage 30.0: task 214))",
+      "HashAggregate: number of output rows = 68",
+      "WholeStageCodegen (1): duration = total (min, med, max (stageId: taskId))\n1.4 s (5 ms, 13 ms, 104 ms (stage 30.0: task 214))",
+      "Exchange: shuffle records written = 68",
+      "Exchange: remote merged reqs duration = 0 ms",
+      "Exchange: remote merged blocks fetched = 0",
+      "Exchange: records read = 68",
+      "Exchange: local bytes read = 3.9 KiB",
+      "Exchange: merged fetch fallback count = 0",
+      "Exchange: local blocks read = 68",
+      "Exchange: remote merged chunks fetched = 0",
+      "Exchange: remote blocks read = 0",
+      "Exchange: data size = total (min, med, max (stageId: taskId))\n1088.0 B (16.0 B, 16.0 B, 16.0 B (stage 30.0: task 171))",
+      "Exchange: local merged bytes read = 0.0 B",
+      "Exchange: local merged chunks fetched = 0",
+      "Exchange: shuffle write time = total (min, med, max (stageId: taskId))\n71 ms (0 ms, 0 ms, 5 ms (stage 30.0: task 220))",
+      "Exchange: remote merged bytes read = 0.0 B",
+      "Exchange: local merged blocks fetched = 0",
+      "Exchange: corrupt merged block chunks = 0",
+      "Exchange: fetch wait time = 0 ms",
+      "Exchange: remote bytes read = 0.0 B",
+      "Exchange: number of partitions = 1",
+      "Exchange: remote reqs duration = 0 ms",
+      "Exchange: remote bytes read to disk = 0.0 B",
+      "Exchange: shuffle bytes written = total (min, med, max (stageId: taskId))\n3.9 KiB (59.0 B, 59.0 B, 59.0 B (stage 30.0: task 171))",
+      "HashAggregate: time in aggregation build = 4 ms",
+      "HashAggregate: number of output rows = 1",
+      "WholeStageCodegen (2): duration = 5 ms"
+    ],
+    "date_sql": [
+      "Scan parquet: number of files read = 216",
+      "Scan parquet: scan time = total (min, med, max (stageId: taskId))\n1.5 s (4 ms, 11 ms, 58 ms (stage 33.0: task 306))",
+      "Scan parquet: dynamic partition pruning time = 0 ms",
+      "Scan parquet: metadata time = 0 ms",
+      "Scan parquet: size of files read = 1121.0 MiB",
+      "Scan parquet: number of output rows = 9,495,016",
+      "Scan parquet: number of partitions read = 36",
+      "ColumnarToRow: number of output rows = 9,495,016",
+      "ColumnarToRow: number of input batches = 2,388",
+      "Filter: number of output rows = 9,495,016",
+      "HashAggregate: time in aggregation build = total (min, med, max (stageId: taskId))\n2.7 s (5 ms, 15 ms, 119 ms (stage 33.0: task 238))",
+      "HashAggregate: number of output rows = 102",
+      "WholeStageCodegen (1): duration = total (min, med, max (stageId: taskId))\n2.7 s (6 ms, 16 ms, 119 ms (stage 33.0: task 238))",
+      "Exchange: shuffle records written = 102",
+      "Exchange: remote merged reqs duration = 0 ms",
+      "Exchange: remote merged blocks fetched = 0",
+      "Exchange: records read = 102",
+      "Exchange: local bytes read = 5.9 KiB",
+      "Exchange: merged fetch fallback count = 0",
+      "Exchange: local blocks read = 102",
+      "Exchange: remote merged chunks fetched = 0",
+      "Exchange: remote blocks read = 0",
+      "Exchange: data size = total (min, med, max (stageId: taskId))\n1632.0 B (16.0 B, 16.0 B, 16.0 B (stage 33.0: task 240))",
+      "Exchange: local merged bytes read = 0.0 B",
+      "Exchange: local merged chunks fetched = 0",
+      "Exchange: shuffle write time = total (min, med, max (stageId: taskId))\n88 ms (0 ms, 0 ms, 14 ms (stage 33.0: task 320))",
+      "Exchange: remote merged bytes read = 0.0 B",
+      "Exchange: local merged blocks fetched = 0",
+      "Exchange: corrupt merged block chunks = 0",
+      "Exchange: fetch wait time = 0 ms",
+      "Exchange: remote bytes read = 0.0 B",
+      "Exchange: number of partitions = 1",
+      "Exchange: remote reqs duration = 0 ms",
+      "Exchange: remote bytes read to disk = 0.0 B",
+      "Exchange: shuffle bytes written = total (min, med, max (stageId: taskId))\n5.9 KiB (56.0 B, 59.0 B, 59.0 B (stage 33.0: task 240))",
+      "HashAggregate: time in aggregation build = 4 ms",
+      "HashAggregate: number of output rows = 1",
+      "WholeStageCodegen (2): duration = 5 ms"
+    ]
+  },
+  "udf": {
+    "month": "2024-06",
+    "native_rows": 318813,
+    "blocked_rows": 318813,
+    "native_seconds": 0.133,
+    "blocked_seconds": 1.35,
+    "native_pushed": true,
+    "blocked_mentions_python": true
+  },
+  "naive": {
+    "ran": true,
+    "seconds": 13.644,
+    "orders": 7137692,
+    "net_revenue": 2365962617.920001,
+    "sql_metrics": [
+      "Scan parquet: number of files read = 8",
+      "Scan parquet: scan time = total (min, med, max (stageId: taskId))\n60 ms (7 ms, 7 ms, 11 ms (stage 42.0: task 355))",
+      "Scan parquet: metadata time = 0 ms",
+      "Scan parquet: size of files read = 2.6 MiB",
+      "Scan parquet: number of output rows = 500,000",
+      "ColumnarToRow: number of output rows = 500,000",
+      "ColumnarToRow: number of input batches = 128",
+      "Filter: number of output rows = 487,500",
+      "WholeStageCodegen (3): duration = total (min, med, max (stageId: taskId))\n870 ms (84 ms, 117 ms, 123 ms (stage 42.0: task 356))",
+      "Exchange: shuffle records written = 487,500",
+      "Exchange: remote merged reqs duration = 0 ms",
+      "Exchange: remote merged blocks fetched = 0",
+      "Exchange: records read = 487,500",
+      "Exchange: local bytes read = total (min, med, max (stageId: taskId))\n2.4 MiB (77.0 KiB, 231.4 KiB, 306.0 KiB (stage 52.0: task 451))",
+      "Exchange: merged fetch fallback count = 0",
+      "Exchange: local blocks read = 80",
+      "Exchange: remote merged chunks fetched = 0",
+      "Exchange: remote blocks read = 0",
+      "Exchange: data size = total (min, med, max (stageId: taskId))\n7.4 MiB (952.1 KiB, 952.2 KiB, 952.2 KiB (stage 42.0: task 358))",
+      "Exchange: local merged bytes read = 0.0 B",
+      "Exchange: local merged chunks fetched = 0",
+      "Exchange: shuffle write time = total (min, med, max (stageId: taskId))\n239 ms (9 ms, 34 ms, 50 ms (stage 42.0: task 358))",
+      "Exchange: remote merged bytes read = 0.0 B",
+      "Exchange: local merged blocks fetched = 0",
+      "Exchange: corrupt merged block chunks = 0",
+      "Exchange: fetch wait time = total (min, med, max (stageId: taskId))\n0 ms (0 ms, 0 ms, 0 ms (stage 52.0: task 447))",
+      "Exchange: remote bytes read = 0.0 B",
+      "Exchange: number of partitions = 32",
+      "Exchange: remote reqs duration = 0 ms",
+      "Exchange: remote bytes read to disk = 0.0 B",
+      "Exchange: shuffle bytes written = total (min, med, max (stageId: taskId))\n2.4 MiB (300.7 KiB, 300.7 KiB, 338.2 KiB (stage 42.0: task 359))",
+      "AQEShuffleRead: number of partitions = 10",
+      "AQEShuffleRead: number of empty partitions = 0",
+      "AQEShuffleRead: partition data size = total (min, med, max (stageId: taskId))\n2.5 MiB (81.9 KiB, 244.7 KiB, 324.8 KiB (driver))",
+      "AQEShuffleRead: number of coalesced partitions = 9",
+      "Sort: sort time = total (min, med, max (stageId: taskId))\n9 ms (0 ms, 1 ms, 3 ms (stage 52.0: task 448))",
+      "Sort: peak memory = total (min, med, max (stageId: taskId))\n178.5 MiB (16.5 MiB, 18.0 MiB, 18.0 MiB (stage 52.0: task 447))",
+      "Sort: spill size = total (min, med, max (stageId: taskId))\n0.0 B (0.0 B, 0.0 B, 0.0 B (stage 52.0: task 447))",
+      "WholeStageCodegen (8): duration = total (min, med, max (stageId: taskId))\n35.7 s (900 ms, 3.8 s, 4.6 s (stage 52.0: task 452))",
+      "Scan parquet: number of files read = 8"
+    ],
+    "sort_merge": true,
+    "broadcast": false
+  },
+  "optimized": {
+    "seconds": 15.394,
+    "orders": 7137692,
+    "net_revenue": 2365962617.9199996,
+    "output": "/Users/ajr115/Desktop/PySpark Data Processing/output/monthly_sales",
+    "highlights": "+- Project [customer_id#156L, product_id#157L, transaction_id#155L, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166, gross_revenue#388, net_revenue#389, sale_year#390, price_band#391, category#173, subcategory#174, brand#175, segment#183, loyalty_tier#184, customer_region#182]\n      :- Project [product_id#157L, transaction_id#155L, customer_id#156L, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166, gross_revenue#388, net_revenue#389, sale_year#390, price_band#391, category#173, subcategory#174, brand#175]\n      :     :- Project [transaction_id#155L, customer_id#156L, product_id#157L, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166, gross_revenue#388, net_revenue#389, sale_year#390, price_band#391]\n      :     :  +- Project [transaction_id#155L, customer_id#156L, product_id#157L, sale_date#159, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166, gross_revenue#388, net_revenue#389, sale_year#390, CASE WHEN (unit_price#161 < cast(25 as double)) THEN budget WHEN (unit_price#161 < cast(75 as double)) THEN mid ELSE premium END AS price_band#391]\n      :     :     +- Project [transaction_id#155L, customer_id#156L, product_id#157L, sale_date#159, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166, gross_revenue#388, net_revenue#389, year(sale_date#159) AS sale_year#390]\n      :     :        +- Project [transaction_id#155L, customer_id#156L, product_id#157L, sale_date#159, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166, gross_revenue#388, round((gross_revenue#388 * (cast(1 as double) - discount_pct#162)), 2) AS net_revenue#389]\n      :     :           +- Project [transaction_id#155L, customer_id#156L, product_id#157L, sale_date#159, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166, round((cast(quantity#160 as double) * unit_price#161), 2) AS gross_revenue#388]\n      :     :              +- Filter (quantity#160 > 0)\n      :     :                 +- Filter (discount_pct#162 <= 0.5)\n      :     :                    +- Filter (status#165 = COMPLETED)\n      :     :                       +- Filter (sale_month#171 >= 2023-01)\n      :     :                          +- Project [transaction_id#155L, customer_id#156L, product_id#157L, sale_date#159, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166]\n      :        +- Project [product_id#172L, category#173, subcategory#174, brand#175]\n      :           +- Filter product_active#179: boolean\n      :              +- Project [product_id#172L, category#173, subcategory#174, brand#175, list_price#176, is_active#177 AS product_active#179]\n         +- Project [customer_id#180L, segment#183, loyalty_tier#184, customer_region#182]\n            +- Filter customer_active#188: boolean\n               +- Project [customer_id#180L, signup_date#181, customer_region#182, segment#183, loyalty_tier#184, age_band#185, is_active#186 AS customer_active#188]\n+- Project [customer_id#156L, product_id#157L, transaction_id#155L, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166, gross_revenue#388, net_revenue#389, sale_year#390, price_band#391, category#173, subcategory#174, brand#175, segment#183, loyalty_tier#184, customer_region#182]\n      :- Project [product_id#157L, transaction_id#155L, customer_id#156L, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166, gross_revenue#388, net_revenue#389, sale_year#390, price_band#391, category#173, subcategory#174, brand#175]\n      :     :- Project [transaction_id#155L, customer_id#156L, product_id#157L, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166, gross_revenue#388, net_revenue#389, sale_year#390, price_band#391]\n      :     :  +- Project [transaction_id#155L, customer_id#156L, product_id#157L, sale_date#159, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166, gross_revenue#388, net_revenue#389, sale_year#390, CASE WHEN (unit_price#161 < cast(25 as double)) THEN budget WHEN (unit_price#161 < cast(75 as double)) THEN mid ELSE premium END AS price_band#391]\n      :     :     +- Project [transaction_id#155L, customer_id#156L, product_id#157L, sale_date#159, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166, gross_revenue#388, net_revenue#389, year(sale_date#159) AS sale_year#390]\n      :     :        +- Project [transaction_id#155L, customer_id#156L, product_id#157L, sale_date#159, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166, gross_revenue#388, round((gross_revenue#388 * (cast(1 as double) - discount_pct#162)), 2) AS net_revenue#389]\n      :     :           +- Project [transaction_id#155L, customer_id#156L, product_id#157L, sale_date#159, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166, round((cast(quantity#160 as double) * unit_price#161), 2) AS gross_revenue#388]\n      :     :              +- Filter (quantity#160 > 0)\n      :     :                 +- Filter (discount_pct#162 <= 0.5)\n      :     :                    +- Filter (status#165 = COMPLETED)\n      :     :                       +- Filter (sale_month#171 >= 2023-01)\n      :     :                          +- Project [transaction_id#155L, customer_id#156L, product_id#157L, sale_date#159, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166]\n      :        +- Project [product_id#172L, category#173, subcategory#174, brand#175]\n      :           +- Filter product_active#179: boolean\n      :              +- Project [product_id#172L, category#173, subcategory#174, brand#175, list_price#176, is_active#177 AS product_active#179]\n         +- Project [customer_id#180L, segment#183, loyalty_tier#184, customer_region#182]\n            +- Filter customer_active#188: boolean\n               +- Project [customer_id#180L, signup_date#181, customer_region#182, segment#183, loyalty_tier#184, age_band#185, is_active#186 AS customer_active#188]\n+- Project [customer_id#156L, sale_month#171, quantity#160, discount_pct#162, channel#163, store_region#166, gross_revenue#388, net_revenue#389, sale_year#390, price_band#391, category#173, subcategory#174]\n      :- Project [customer_id#156L, sale_month#171, quantity#160, discount_pct#162, channel#163, store_region#166, gross_revenue#388, net_revenue#389, sale_year#390, price_band#391, category#173, subcategory#174]\n      :     :- Project [customer_id#156L, product_id#157L, sale_month#171, quantity#160, discount_pct#162, channel#163, store_region#166, gross_revenue#388, round((gross_revenue#388 * (1.0 - discount_pct#162)), 2) AS net_revenue#389, year(sale_date#159) AS sale_year#390, CASE WHEN (unit_price#161 < 25.0) THEN budget WHEN (unit_price#161 < 75.0) THEN mid ELSE premium END AS price_band#391]\n      :     :  +- Project [customer_id#156L, product_id#157L, sale_date#159, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, store_region#166, round((cast(quantity#160 as double) * unit_price#161), 2) AS gross_revenue#388]\n      :     :     +- Filter (((((isnotnull(sale_month#171) AND isnotnull(status#165)) AND isnotnull(discount_pct#162)) AND isnotnull(quantity#160)) AND (((sale_month#171 >= 2023-01) AND (status#165 = COMPLETED)) AND ((discount_pct#162 <= 0.5) AND (quantity#160 > 0)))) AND (isnotnull(product_id#157L) AND isnotnull(customer_id#156L)))\n      :     +- Project [product_id#172L, category#173, subcategory#174]\n      :        +- Filter ((isnotnull(is_active#177) AND is_active#177) AND isnotnull(product_id#172L))\n      +- Project [customer_id#180L]\n         +- Filter ((isnotnull(is_active#186) AND is_active#186) AND isnotnull(customer_id#180L))\nAdaptiveSparkPlan isFinalPlan=false\n+- HashAggregate(keys=[sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391], functions=[count(1), sum(quantity#160), sum(gross_revenue#388), sum(net_revenue#389), avg(discount_pct#162), count(distinct customer_id#156L)], output=[sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, orders#392L, units#393L, gross_revenue#394, net_revenue#395, avg_discount#396, customers#397L])\n   +- Exchange hashpartitioning(sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, 32), ENSURE_REQUIREMENTS, [plan_id=1582]\n      +- HashAggregate(keys=[sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391], functions=[merge_count(1), merge_sum(quantity#160), merge_sum(gross_revenue#388), merge_sum(net_revenue#389), merge_avg(discount_pct#162), partial_count(distinct customer_id#156L)], output=[sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, count#425L, sum#427L, sum#429, sum#431, sum#434, count#435L, count#438L])\n         +- HashAggregate(keys=[sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, customer_id#156L], functions=[merge_count(1), merge_sum(quantity#160), merge_sum(gross_revenue#388), merge_sum(net_revenue#389), merge_avg(discount_pct#162)], output=[sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, customer_id#156L, count#425L, sum#427L, sum#429, sum#431, sum#434, count#435L])\n            +- Exchange hashpartitioning(sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, customer_id#156L, 32), ENSURE_REQUIREMENTS, [plan_id=1578]\n               +- HashAggregate(keys=[sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, customer_id#156L], functions=[partial_count(1), partial_sum(quantity#160), partial_sum(gross_revenue#388), partial_sum(net_revenue#389), partial_avg(discount_pct#162)], output=[sale_year#390, sale_month#171, store_region#166, category#173, subcategory#174, channel#163, price_band#391, customer_id#156L, count#425L, sum#427L, sum#429, sum#431, sum#434, count#435L])\n                  +- Project [customer_id#156L, sale_month#171, quantity#160, discount_pct#162, channel#163, store_region#166, gross_revenue#388, net_revenue#389, sale_year#390, price_band#391, category#173, subcategory#174]\n                     +- BroadcastHashJoin [customer_id#156L], [customer_id#180L], Inner, BuildRight, false, false\n                        :- Project [customer_id#156L, sale_month#171, quantity#160, discount_pct#162, channel#163, store_region#166, gross_revenue#388, net_revenue#389, sale_year#390, price_band#391, category#173, subcategory#174]\n                        :  +- BroadcastHashJoin [product_id#157L], [product_id#172L], Inner, BuildRight, false, false\n                        :     :- Project [customer_id#156L, product_id#157L, sale_month#171, quantity#160, discount_pct#162, channel#163, store_region#166, gross_revenue#388, round((gross_revenue#388 * (1.0 - discount_pct#162)), 2) AS net_revenue#389, year(sale_date#159) AS sale_year#390, CASE WHEN (unit_price#161 < 25.0) THEN budget WHEN (unit_price#161 < 75.0) THEN mid ELSE premium END AS price_band#391]\n                        :     :  +- Project [customer_id#156L, product_id#157L, sale_date#159, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, store_region#166, round((cast(quantity#160 as double) * unit_price#161), 2) AS gross_revenue#388]\n                        :     :     +- Filter (((((((isnotnull(status#165) AND isnotnull(discount_pct#162)) AND isnotnull(quantity#160)) AND (status#165 = COMPLETED)) AND (discount_pct#162 <= 0.5)) AND (quantity#160 > 0)) AND isnotnull(product_id#157L)) AND isnotnull(customer_id#156L))\n                        :     :        +- FileScan parquet [customer_id#156L,product_id#157L,sale_date#159,quantity#160,unit_price#161,discount_pct#162,channel#163,status#165,store_region#166,sale_month#171] Batched: true, DataFilters: [isnotnull(status#165), isnotnull(discount_pct#162), isnotnull(quantity#160), (status#165 = COMPL..., Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/Users/ajr115/Desktop/PySpark Data Processing/data/transactions], PartitionFilters: [isnotnull(sale_month#171), (sale_month#171 >= 2023-01)], PushedFilters: [IsNotNull(status), IsNotNull(discount_pct), IsNotNull(quantity), EqualTo(status,COMPLETED), Less..., ReadSchema: struct<customer_id:bigint,product_id:bigint,sale_date:date,quantity:int,unit_price:double,discoun...\n                        :     +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=1569]\n                        :        +- Project [product_id#172L, category#173, subcategory#174]\n                        :           +- Filter ((isnotnull(is_active#177) AND is_active#177) AND isnotnull(product_id#172L))\n                        :              +- FileScan parquet [product_id#172L,category#173,subcategory#174,is_active#177] Batched: true, DataFilters: [isnotnull(is_active#177), is_active#177, isnotnull(product_id#172L)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/Users/ajr115/Desktop/PySpark Data Processing/data/products], PartitionFilters: [], PushedFilters: [IsNotNull(is_active), EqualTo(is_active,true), IsNotNull(product_id)], ReadSchema: struct<product_id:bigint,category:string,subcategory:string,is_active:boolean>\n                        +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=1573]\n                           +- Project [customer_id#180L]\n                              +- Filter ((isnotnull(is_active#186) AND is_active#186) AND isnotnull(customer_id#180L))\n                                 +- FileScan parquet [customer_id#180L,is_active#186] Batched: true, DataFilters: [isnotnull(is_active#186), is_active#186, isnotnull(customer_id#180L)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/Users/ajr115/Desktop/PySpark Data Processing/data/customers], PartitionFilters: [], PushedFilters: [IsNotNull(is_active), EqualTo(is_active,true), IsNotNull(customer_id)], ReadSchema: struct<customer_id:bigint,is_active:boolean>",
+    "sql_metrics": [
+      "Scan parquet: number of files read = 8",
+      "Scan parquet: scan time = total (min, med, max (stageId: taskId))\n366 ms (37 ms, 48 ms, 56 ms (stage 67.0: task 473))",
+      "Scan parquet: metadata time = 0 ms",
+      "Scan parquet: size of files read = 2.6 MiB",
+      "Scan parquet: number of output rows = 500,000",
+      "ColumnarToRow: number of output rows = 500,000",
+      "ColumnarToRow: number of input batches = 128",
+      "Filter: number of output rows = 487,500",
+      "WholeStageCodegen (2): duration = total (min, med, max (stageId: taskId))\n1.4 s (150 ms, 181 ms, 190 ms (stage 67.0: task 478))",
+      "BroadcastExchange: time to broadcast = 22 ms",
+      "BroadcastExchange: time to build = 200 ms",
+      "BroadcastExchange: time to collect = 299 ms",
+      "BroadcastExchange: number of output rows = 487,500",
+      "BroadcastExchange: data size = 67.8 MiB",
+      "Scan parquet: number of files read = 8",
+      "Scan parquet: scan time = total (min, med, max (stageId: taskId))\n125 ms (11 ms, 17 ms, 22 ms (stage 66.0: task 465))",
+      "Scan parquet: metadata time = 0 ms",
+      "Scan parquet: size of files read = 105.3 KiB",
+      "Scan parquet: number of output rows = 20,000",
+      "ColumnarToRow: number of output rows = 20,000",
+      "ColumnarToRow: number of input batches = 8",
+      "Filter: number of output rows = 19,200",
+      "WholeStageCodegen (1): duration = total (min, med, max (stageId: taskId))\n189 ms (17 ms, 26 ms, 33 ms (stage 66.0: task 471))",
+      "BroadcastExchange: time to broadcast = 24 ms",
+      "BroadcastExchange: time to build = 141 ms",
+      "BroadcastExchange: time to collect = 112 ms",
+      "BroadcastExchange: number of output rows = 19,200",
+      "BroadcastExchange: data size = 64.2 MiB",
+      "Scan parquet: number of files read = 144",
+      "Scan parquet: scan time = total (min, med, max (stageId: taskId))\n5.8 s (23 ms, 76 ms, 237 ms (stage 68.0: task 495))",
+      "Scan parquet: dynamic partition pruning time = 0 ms",
+      "Scan parquet: metadata time = 0 ms",
+      "Scan parquet: size of files read = 747.2 MiB",
+      "Scan parquet: number of output rows = 9,495,016",
+      "Scan parquet: number of partitions read = 24",
+      "ColumnarToRow: number of output rows = 9,495,016",
+      "ColumnarToRow: number of input batches = 2,388",
+      "Filter: number of output rows = 7,624,901",
+      "BroadcastHashJoin: number of output rows = 7,320,222",
+      "BroadcastHashJoin: number of output rows = 7,137,692"
+    ],
+    "broadcast": true,
+    "partition_filters": true,
+    "pushed_filters": true,
+    "omits_unused_columns": false
+  },
+  "monthly_sql": {
+    "seconds": 0.286,
+    "top": [
+      {
+        "category": "Grocery",
+        "store_region": "Southeast",
+        "net_revenue": 19028983.799999997,
+        "orders": 56426
+      },
+      {
+        "category": "Automotive",
+        "store_region": "West",
+        "net_revenue": 18947084.62,
+        "orders": 56160
+      },
+      {
+        "category": "Grocery",
+        "store_region": "West",
+        "net_revenue": 18921224.4,
+        "orders": 56444
+      },
+      {
+        "category": "Grocery",
+        "store_region": "Midwest",
+        "net_revenue": 18896311.659999996,
+        "orders": 56404
+      },
+      {
+        "category": "Grocery",
+        "store_region": "Southwest",
+        "net_revenue": 18888428.779999997,
+        "orders": 56158
+      },
+      {
+        "category": "Automotive",
+        "store_region": "Pacific",
+        "net_revenue": 18887336.76,
+        "orders": 56287
+      },
+      {
+        "category": "Automotive",
+        "store_region": "Southwest",
+        "net_revenue": 18879763.63,
+        "orders": 56263
+      },
+      {
+        "category": "Automotive",
+        "store_region": "Mountain",
+        "net_revenue": 18864801.800000004,
+        "orders": 56223
+      }
+    ]
+  },
+  "status_sql": {
+    "seconds": 3.104,
+    "rows": [
+      {
+        "channel": "app",
+        "region_match": "cross_region",
+        "status": "CANCELLED",
+        "transactions": 159375
+      },
+      {
+        "channel": "app",
+        "region_match": "cross_region",
+        "status": "COMPLETED",
+        "transactions": 1722282
+      },
+      {
+        "channel": "app",
+        "region_match": "cross_region",
+        "status": "PENDING",
+        "transactions": 40626
+      },
+      {
+        "channel": "app",
+        "region_match": "cross_region",
+        "status": "RETURNED",
+        "transactions": 101045
+      },
+      {
+        "channel": "app",
+        "region_match": "same_region",
+        "status": "CANCELLED",
+        "transactions": 22857
+      },
+      {
+        "channel": "app",
+        "region_match": "same_region",
+        "status": "COMPLETED",
+        "transactions": 246001
+      },
+      {
+        "channel": "app",
+        "region_match": "same_region",
+        "status": "PENDING",
+        "transactions": 5733
+      },
+      {
+        "channel": "app",
+        "region_match": "same_region",
+        "status": "RETURNED",
+        "transactions": 14678
+      },
+      {
+        "channel": "marketplace",
+        "region_match": "cross_region",
+        "status": "CANCELLED",
+        "transactions": 441358
+      },
+      {
+        "channel": "marketplace",
+        "region_match": "cross_region",
+        "status": "COMPLETED",
+        "transactions": 1440616
+      },
+      {
+        "channel": "marketplace",
+        "region_match": "cross_region",
+        "status": "PENDING",
+        "transactions": 40803
+      },
+      {
+        "channel": "marketplace",
+        "region_match": "cross_region",
+        "status": "RETURNED",
+        "transactions": 101071
+      },
+      {
+        "channel": "marketplace",
+        "region_match": "same_region",
+        "status": "CANCELLED",
+        "transactions": 62995
+      },
+      {
+        "channel": "marketplace",
+        "region_match": "same_region",
+        "status": "COMPLETED",
+        "transactions": 206698
+      },
+      {
+        "channel": "marketplace",
+        "region_match": "same_region",
+        "status": "PENDING",
+        "transactions": 5780
+      },
+      {
+        "channel": "marketplace",
+        "region_match": "same_region",
+        "status": "RETURNED",
+        "transactions": 14505
+      },
+      {
+        "channel": "store",
+        "region_match": "same_region",
+        "status": "CANCELLED",
+        "transactions": 180914
+      },
+      {
+        "channel": "store",
+        "region_match": "same_region",
+        "status": "COMPLETED",
+        "transactions": 1972023
+      },
+      {
+        "channel": "store",
+        "region_match": "same_region",
+        "status": "PENDING",
+        "transactions": 46083
+      },
+      {
+        "channel": "store",
+        "region_match": "same_region",
+        "status": "RETURNED",
+        "transactions": 115660
+      },
+      {
+        "channel": "web",
+        "region_match": "cross_region",
+        "status": "CANCELLED",
+        "transactions": 158797
+      },
+      {
+        "channel": "web",
+        "region_match": "cross_region",
+        "status": "COMPLETED",
+        "transactions": 1726833
+      },
+      {
+        "channel": "web",
+        "region_match": "cross_region",
+        "status": "PENDING",
+        "transactions": 40608
+      },
+      {
+        "channel": "web",
+        "region_match": "cross_region",
+        "status": "RETURNED",
+        "transactions": 101561
+      },
+      {
+        "channel": "web",
+        "region_match": "same_region",
+        "status": "CANCELLED",
+        "transactions": 22519
+      },
+      {
+        "channel": "web",
+        "region_match": "same_region",
+        "status": "COMPLETED",
+        "transactions": 246799
+      },
+      {
+        "channel": "web",
+        "region_match": "same_region",
+        "status": "PENDING",
+        "transactions": 5729
+      },
+      {
+        "channel": "web",
+        "region_match": "same_region",
+        "status": "RETURNED",
+        "transactions": 14345
+      }
+    ],
+    "broadcast": true
+  },
+  "cache": {
+    "uncached_count_seconds": 7.522,
+    "uncached_avg_seconds": 6.326,
+    "materialize_seconds": 7.538,
+    "cached_count_seconds": 0.194,
+    "cached_avg_seconds": 0.242,
+    "segment_sql_seconds": 0.714,
+    "avg_lifetime_uncached": 4853.266607562255,
+    "avg_lifetime_cached": 4853.266607562272,
+    "customers": 487499,
+    "after_plan_uses_cache": true
+  },
+  "segments": [
+    {
+      "segment": "consumer",
+      "loyalty_tier": "silver",
+      "customers": 30331,
+      "avg_lifetime_net": 4871.66,
+      "avg_orders": 14.65
+    },
+    {
+      "segment": "student",
+      "loyalty_tier": "silver",
+      "customers": 30492,
+      "avg_lifetime_net": 4869.27,
+      "avg_orders": 14.68
+    },
+    {
+      "segment": "student",
+      "loyalty_tier": "bronze",
+      "customers": 30230,
+      "avg_lifetime_net": 4866.17,
+      "avg_orders": 14.67
+    },
+    {
+      "segment": "student",
+      "loyalty_tier": "gold",
+      "customers": 30603,
+      "avg_lifetime_net": 4859.56,
+      "avg_orders": 14.66
+    },
+    {
+      "segment": "premium",
+      "loyalty_tier": "silver",
+      "customers": 30443,
+      "avg_lifetime_net": 4858.21,
+      "avg_orders": 14.65
+    },
+    {
+      "segment": "business",
+      "loyalty_tier": "platinum",
+      "customers": 30608,
+      "avg_lifetime_net": 4857.72,
+      "avg_orders": 14.66
+    },
+    {
+      "segment": "consumer",
+      "loyalty_tier": "bronze",
+      "customers": 30444,
+      "avg_lifetime_net": 4856.67,
+      "avg_orders": 14.65
+    },
+    {
+      "segment": "business",
+      "loyalty_tier": "bronze",
+      "customers": 30200,
+      "avg_lifetime_net": 4856.21,
+      "avg_orders": 14.64
+    },
+    {
+      "segment": "student",
+      "loyalty_tier": "platinum",
+      "customers": 30466,
+      "avg_lifetime_net": 4852.21,
+      "avg_orders": 14.63
+    },
+    {
+      "segment": "consumer",
+      "loyalty_tier": "platinum",
+      "customers": 30708,
+      "avg_lifetime_net": 4849.97,
+      "avg_orders": 14.65
+    },
+    {
+      "segment": "business",
+      "loyalty_tier": "silver",
+      "customers": 30277,
+      "avg_lifetime_net": 4849.36,
+      "avg_orders": 14.64
+    },
+    {
+      "segment": "premium",
+      "loyalty_tier": "gold",
+      "customers": 30872,
+      "avg_lifetime_net": 4846.77,
+      "avg_orders": 14.64
+    },
+    {
+      "segment": "premium",
+      "loyalty_tier": "platinum",
+      "customers": 30559,
+      "avg_lifetime_net": 4843.87,
+      "avg_orders": 14.62
+    },
+    {
+      "segment": "business",
+      "loyalty_tier": "gold",
+      "customers": 30260,
+      "avg_lifetime_net": 4841.91,
+      "avg_orders": 14.61
+    },
+    {
+      "segment": "premium",
+      "loyalty_tier": "bronze",
+      "customers": 30565,
+      "avg_lifetime_net": 4840.91,
+      "avg_orders": 14.63
+    },
+    {
+      "segment": "consumer",
+      "loyalty_tier": "gold",
+      "customers": 30441,
+      "avg_lifetime_net": 4832.02,
+      "avg_orders": 14.6
+    }
+  ],
+  "ml": {
+    "sample_rows": 206633,
+    "positive_rows": 25482,
+    "positive_rate": 0.12332008924034399,
+    "majority_class_accuracy": 0.876679910759656,
+    "fit_seconds": 10.371,
+    "area_under_roc": 0.70456360402781,
+    "area_under_pr": 0.2377103949256445,
+    "confusion": [
+      {
+        "label": 1.0,
+        "prediction": 0.0,
+        "count": 5007
+      },
+      {
+        "label": 0.0,
+        "prediction": 0.0,
+        "count": 36093
+      }
+    ],
+    "coefficients": [
+      {
+        "feature": "discount_pct",
+        "weight": 1.401724676210889
+      },
+      {
+        "feature": "channel_oh_marketplace",
+        "weight": 0.7203568687706229
+      },
+      {
+        "feature": "channel_oh_app",
+        "weight": -0.2507032226053051
+      },
+      {
+        "feature": "channel_oh_store",
+        "weight": -0.23785400920489852
+      },
+      {
+        "feature": "channel_oh_web",
+        "weight": -0.23445335774627338
+      },
+      {
+        "feature": "quantity",
+        "weight": 0.16818312529395904
+      },
+      {
+        "feature": "category_oh_Grocery",
+        "weight": 0.023345287454645848
+      },
+      {
+        "feature": "loyalty_tier_oh_silver",
+        "weight": -0.01666698063340621
+      },
+      {
+        "feature": "category_oh_Toys",
+        "weight": -0.014794594836324792
+      },
+      {
+        "feature": "category_oh_Apparel",
+        "weight": 0.014692054649193041
+      },
+      {
+        "feature": "category_oh_Sports",
+        "weight": -0.014379964902166106
+      },
+      {
+        "feature": "loyalty_tier_oh_platinum",
+        "weight": 0.01240804891887866
+      }
+    ],
+    "preview": [
+      {
+        "channel": "store",
+        "category": "Electronics",
+        "segment": "premium",
+        "quantity": 1,
+        "discount_pct": 0.05,
+        "label": 0.0,
+        "prediction": 0.0
+      },
+      {
+        "channel": "marketplace",
+        "category": "Apparel",
+        "segment": "business",
+        "quantity": 1,
+        "discount_pct": 0.0,
+        "label": 0.0,
+        "prediction": 0.0
+      },
+      {
+        "channel": "marketplace",
+        "category": "Automotive",
+        "segment": "student",
+        "quantity": 1,
+        "discount_pct": 0.0,
+        "label": 1.0,
+        "prediction": 0.0
+      },
+      {
+        "channel": "marketplace",
+        "category": "Sports",
+        "segment": "student",
+        "quantity": 1,
+        "discount_pct": 0.0,
+        "label": 1.0,
+        "prediction": 0.0
+      },
+      {
+        "channel": "web",
+        "category": "Beauty",
+        "segment": "premium",
+        "quantity": 1,
+        "discount_pct": 0.0,
+        "label": 0.0,
+        "prediction": 0.0
+      },
+      {
+        "channel": "web",
+        "category": "Apparel",
+        "segment": "consumer",
+        "quantity": 1,
+        "discount_pct": 0.0,
+        "label": 0.0,
+        "prediction": 0.0
+      },
+      {
+        "channel": "marketplace",
+        "category": "Grocery",
+        "segment": "business",
+        "quantity": 1,
+        "discount_pct": 0.05,
+        "label": 0.0,
+        "prediction": 0.0
+      },
+      {
+        "channel": "store",
+        "category": "Sports",
+        "segment": "business",
+        "quantity": 1,
+        "discount_pct": 0.0,
+        "label": 0.0,
+        "prediction": 0.0
+      },
+      {
+        "channel": "store",
+        "category": "Toys",
+        "segment": "student",
+        "quantity": 1,
+        "discount_pct": 0.0,
+        "label": 0.0,
+        "prediction": 0.0
+      },
+      {
+        "channel": "web",
+        "category": "Apparel",
+        "segment": "student",
+        "quantity": 1,
+        "discount_pct": 0.0,
+        "label": 0.0,
+        "prediction": 0.0
+      },
+      {
+        "channel": "app",
+        "category": "Apparel",
+        "segment": "consumer",
+        "quantity": 1,
+        "discount_pct": 0.05,
+        "label": 0.0,
+        "prediction": 0.0
+      },
+      {
+        "channel": "store",
+        "category": "Apparel",
+        "segment": "consumer",
+        "quantity": 1,
+        "discount_pct": 0.1,
+        "label": 0.0,
+        "prediction": 0.0
+      }
+    ]
+  },
+  "comparison": {
+    "compared": true,
+    "order_gap": 0,
+    "net_gap": 0.0,
+    "net_relative_gap": 6.046213341557305e-16,
+    "match": true
+  },
+  "spill": {
+    "stages": 191,
+    "disk_bytes_spilled": 0,
+    "memory_bytes_spilled": 0
+  },
+  "checks_failed": []
+}

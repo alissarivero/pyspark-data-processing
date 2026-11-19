@@ -1,0 +1,142 @@
+== Parsed Logical Plan ==
+'Aggregate ['segment], ['segment, 'COUNT(1) AS customers#1264]
++- 'UnresolvedRelation [customer_value], [], false
+
+== Analyzed Logical Plan ==
+segment: string, customers: bigint
+Aggregate [segment#183], [segment#183, count(1) AS customers#1264L]
++- SubqueryAlias customer_value
+   +- View (`customer_value`, [customer_id#156L, segment#183, loyalty_tier#184, customer_region#182, orders#603L, lifetime_net#604, avg_discount#605])
+      +- Aggregate [customer_id#156L, segment#183, loyalty_tier#184, customer_region#182], [customer_id#156L, segment#183, loyalty_tier#184, customer_region#182, count(1) AS orders#603L, round(sum(net_revenue#389), 2) AS lifetime_net#604, round(avg(discount_pct#162), 4) AS avg_discount#605]
+         +- SubqueryAlias enriched_sales
+            +- View (`enriched_sales`, [customer_id#156L, product_id#157L, transaction_id#155L, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166, gross_revenue#388, net_revenue#389, sale_year#390, price_band#391, category#173, subcategory#174, brand#175, segment#183, loyalty_tier#184, customer_region#182])
+               +- Project [customer_id#156L, product_id#157L, transaction_id#155L, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166, gross_revenue#388, net_revenue#389, sale_year#390, price_band#391, category#173, subcategory#174, brand#175, segment#183, loyalty_tier#184, customer_region#182]
+                  +- Join Inner, (customer_id#156L = customer_id#180L)
+                     :- Project [product_id#157L, transaction_id#155L, customer_id#156L, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166, gross_revenue#388, net_revenue#389, sale_year#390, price_band#391, category#173, subcategory#174, brand#175]
+                     :  +- Join Inner, (product_id#157L = product_id#172L)
+                     :     :- Project [transaction_id#155L, customer_id#156L, product_id#157L, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166, gross_revenue#388, net_revenue#389, sale_year#390, price_band#391]
+                     :     :  +- Project [transaction_id#155L, customer_id#156L, product_id#157L, sale_date#159, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166, gross_revenue#388, net_revenue#389, sale_year#390, CASE WHEN (unit_price#161 < cast(25 as double)) THEN budget WHEN (unit_price#161 < cast(75 as double)) THEN mid ELSE premium END AS price_band#391]
+                     :     :     +- Project [transaction_id#155L, customer_id#156L, product_id#157L, sale_date#159, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166, gross_revenue#388, net_revenue#389, year(sale_date#159) AS sale_year#390]
+                     :     :        +- Project [transaction_id#155L, customer_id#156L, product_id#157L, sale_date#159, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166, gross_revenue#388, round((gross_revenue#388 * (cast(1 as double) - discount_pct#162)), 2) AS net_revenue#389]
+                     :     :           +- Project [transaction_id#155L, customer_id#156L, product_id#157L, sale_date#159, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166, round((cast(quantity#160 as double) * unit_price#161), 2) AS gross_revenue#388]
+                     :     :              +- Filter (quantity#160 > 0)
+                     :     :                 +- Filter (discount_pct#162 <= 0.5)
+                     :     :                    +- Filter (status#165 = COMPLETED)
+                     :     :                       +- Filter (sale_month#171 >= 2023-01)
+                     :     :                          +- Project [transaction_id#155L, customer_id#156L, product_id#157L, sale_date#159, sale_month#171, quantity#160, unit_price#161, discount_pct#162, channel#163, status#165, store_region#166]
+                     :     :                             +- Relation [transaction_id#155L,customer_id#156L,product_id#157L,store_id#158,sale_date#159,quantity#160,unit_price#161,discount_pct#162,channel#163,payment_method#164,status#165,store_region#166,device_type#167,promo_code#168,receipt_token#169,payment_ref#170,sale_month#171] parquet
+                     :     +- ResolvedHint (strategy=broadcast)
+                     :        +- Project [product_id#172L, category#173, subcategory#174, brand#175]
+                     :           +- Filter product_active#179: boolean
+                     :              +- Project [product_id#172L, category#173, subcategory#174, brand#175, list_price#176, is_active#177 AS product_active#179]
+                     :                 +- Relation [product_id#172L,category#173,subcategory#174,brand#175,list_price#176,is_active#177] parquet
+                     +- ResolvedHint (strategy=broadcast)
+                        +- Project [customer_id#180L, segment#183, loyalty_tier#184, customer_region#182]
+                           +- Filter customer_active#188: boolean
+                              +- Project [customer_id#180L, signup_date#181, customer_region#182, segment#183, loyalty_tier#184, age_band#185, is_active#186 AS customer_active#188]
+                                 +- Relation [customer_id#180L,signup_date#181,customer_region#182,segment#183,loyalty_tier#184,age_band#185,is_active#186] parquet
+
+== Optimized Logical Plan ==
+Aggregate [segment#183], [segment#183, count(1) AS customers#1264L]
++- Project [segment#183]
+   +- InMemoryRelation [customer_id#156L, segment#183, loyalty_tier#184, customer_region#182, orders#603L, lifetime_net#604, avg_discount#605], StorageLevel(disk, memory, deserialized, 1 replicas)
+         +- AdaptiveSparkPlan isFinalPlan=true
+            +- == Final Plan ==
+               ResultQueryStage 3
+               +- *(4) HashAggregate(keys=[customer_id#156L, segment#183, loyalty_tier#184, customer_region#182], functions=[count(1), sum(net_revenue#389), avg(discount_pct#162)], output=[customer_id#156L, segment#183, loyalty_tier#184, customer_region#182, orders#603L, lifetime_net#604, avg_discount#605])
+                  +- ShuffleQueryStage 2
+                     +- Exchange hashpartitioning(customer_id#156L, segment#183, loyalty_tier#184, customer_region#182, 32), ENSURE_REQUIREMENTS, [plan_id=3352]
+                        +- *(3) HashAggregate(keys=[customer_id#156L, segment#183, loyalty_tier#184, customer_region#182], functions=[partial_count(1), partial_sum(net_revenue#389), partial_avg(discount_pct#162)], output=[customer_id#156L, segment#183, loyalty_tier#184, customer_region#182, count#613L, sum#614, sum#615, count#616L])
+                           +- *(3) Project [customer_id#156L, discount_pct#162, net_revenue#389, segment#183, loyalty_tier#184, customer_region#182]
+                              +- *(3) BroadcastHashJoin [customer_id#156L], [customer_id#180L], Inner, BuildRight, false, false
+                                 :- *(3) Project [customer_id#156L, discount_pct#162, net_revenue#389]
+                                 :  +- *(3) BroadcastHashJoin [product_id#157L], [product_id#172L], Inner, BuildRight, false, false
+                                 :     :- *(3) Project [customer_id#156L, product_id#157L, discount_pct#162, round((round((cast(quantity#160 as double) * unit_price#161), 2) * (1.0 - discount_pct#162)), 2) AS net_revenue#389]
+                                 :     :  +- *(3) Filter (((((((isnotnull(status#165) AND isnotnull(discount_pct#162)) AND isnotnull(quantity#160)) AND (status#165 = COMPLETED)) AND (discount_pct#162 <= 0.5)) AND (quantity#160 > 0)) AND isnotnull(product_id#157L)) AND isnotnull(customer_id#156L))
+                                 :     :     +- *(3) ColumnarToRow
+                                 :     :        +- FileScan parquet [customer_id#156L,product_id#157L,quantity#160,unit_price#161,discount_pct#162,status#165,sale_month#171] Batched: true, DataFilters: [isnotnull(status#165), isnotnull(discount_pct#162), isnotnull(quantity#160), (status#165 = COMPL..., Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/Users/ajr115/Desktop/PySpark Data Processing/data/transactions], PartitionFilters: [isnotnull(sale_month#171), (sale_month#171 >= 2023-01)], PushedFilters: [IsNotNull(status), IsNotNull(discount_pct), IsNotNull(quantity), EqualTo(status,COMPLETED), Less..., ReadSchema: struct<customer_id:bigint,product_id:bigint,quantity:int,unit_price:double,discount_pct:double,st...
+                                 :     +- BroadcastQueryStage 0
+                                 :        +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=3225]
+                                 :           +- *(1) Project [product_id#172L]
+                                 :              +- *(1) Filter ((isnotnull(is_active#177) AND is_active#177) AND isnotnull(product_id#172L))
+                                 :                 +- *(1) ColumnarToRow
+                                 :                    +- FileScan parquet [product_id#172L,is_active#177] Batched: true, DataFilters: [isnotnull(is_active#177), is_active#177, isnotnull(product_id#172L)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/Users/ajr115/Desktop/PySpark Data Processing/data/products], PartitionFilters: [], PushedFilters: [IsNotNull(is_active), EqualTo(is_active,true), IsNotNull(product_id)], ReadSchema: struct<product_id:bigint,is_active:boolean>
+                                 +- BroadcastQueryStage 1
+                                    +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=3246]
+                                       +- *(2) Project [customer_id#180L, segment#183, loyalty_tier#184, customer_region#182]
+                                          +- *(2) Filter ((isnotnull(is_active#186) AND is_active#186) AND isnotnull(customer_id#180L))
+                                             +- *(2) ColumnarToRow
+                                                +- FileScan parquet [customer_id#180L,customer_region#182,segment#183,loyalty_tier#184,is_active#186] Batched: true, DataFilters: [isnotnull(is_active#186), is_active#186, isnotnull(customer_id#180L)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/Users/ajr115/Desktop/PySpark Data Processing/data/customers], PartitionFilters: [], PushedFilters: [IsNotNull(is_active), EqualTo(is_active,true), IsNotNull(customer_id)], ReadSchema: struct<customer_id:bigint,customer_region:string,segment:string,loyalty_tier:string,is_active:boo...
+            +- == Initial Plan ==
+               HashAggregate(keys=[customer_id#156L, segment#183, loyalty_tier#184, customer_region#182], functions=[count(1), sum(net_revenue#389), avg(discount_pct#162)], output=[customer_id#156L, segment#183, loyalty_tier#184, customer_region#182, orders#603L, lifetime_net#604, avg_discount#605])
+               +- Exchange hashpartitioning(customer_id#156L, segment#183, loyalty_tier#184, customer_region#182, 32), ENSURE_REQUIREMENTS, [plan_id=3162]
+                  +- HashAggregate(keys=[customer_id#156L, segment#183, loyalty_tier#184, customer_region#182], functions=[partial_count(1), partial_sum(net_revenue#389), partial_avg(discount_pct#162)], output=[customer_id#156L, segment#183, loyalty_tier#184, customer_region#182, count#613L, sum#614, sum#615, count#616L])
+                     +- Project [customer_id#156L, discount_pct#162, net_revenue#389, segment#183, loyalty_tier#184, customer_region#182]
+                        +- BroadcastHashJoin [customer_id#156L], [customer_id#180L], Inner, BuildRight, false, false
+                           :- Project [customer_id#156L, discount_pct#162, net_revenue#389]
+                           :  +- BroadcastHashJoin [product_id#157L], [product_id#172L], Inner, BuildRight, false, false
+                           :     :- Project [customer_id#156L, product_id#157L, discount_pct#162, round((round((cast(quantity#160 as double) * unit_price#161), 2) * (1.0 - discount_pct#162)), 2) AS net_revenue#389]
+                           :     :  +- Filter (((((((isnotnull(status#165) AND isnotnull(discount_pct#162)) AND isnotnull(quantity#160)) AND (status#165 = COMPLETED)) AND (discount_pct#162 <= 0.5)) AND (quantity#160 > 0)) AND isnotnull(product_id#157L)) AND isnotnull(customer_id#156L))
+                           :     :     +- FileScan parquet [customer_id#156L,product_id#157L,quantity#160,unit_price#161,discount_pct#162,status#165,sale_month#171] Batched: true, DataFilters: [isnotnull(status#165), isnotnull(discount_pct#162), isnotnull(quantity#160), (status#165 = COMPL..., Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/Users/ajr115/Desktop/PySpark Data Processing/data/transactions], PartitionFilters: [isnotnull(sale_month#171), (sale_month#171 >= 2023-01)], PushedFilters: [IsNotNull(status), IsNotNull(discount_pct), IsNotNull(quantity), EqualTo(status,COMPLETED), Less..., ReadSchema: struct<customer_id:bigint,product_id:bigint,quantity:int,unit_price:double,discount_pct:double,st...
+                           :     +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=3153]
+                           :        +- Project [product_id#172L]
+                           :           +- Filter ((isnotnull(is_active#177) AND is_active#177) AND isnotnull(product_id#172L))
+                           :              +- FileScan parquet [product_id#172L,is_active#177] Batched: true, DataFilters: [isnotnull(is_active#177), is_active#177, isnotnull(product_id#172L)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/Users/ajr115/Desktop/PySpark Data Processing/data/products], PartitionFilters: [], PushedFilters: [IsNotNull(is_active), EqualTo(is_active,true), IsNotNull(product_id)], ReadSchema: struct<product_id:bigint,is_active:boolean>
+                           +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=3157]
+                              +- Project [customer_id#180L, segment#183, loyalty_tier#184, customer_region#182]
+                                 +- Filter ((isnotnull(is_active#186) AND is_active#186) AND isnotnull(customer_id#180L))
+                                    +- FileScan parquet [customer_id#180L,customer_region#182,segment#183,loyalty_tier#184,is_active#186] Batched: true, DataFilters: [isnotnull(is_active#186), is_active#186, isnotnull(customer_id#180L)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/Users/ajr115/Desktop/PySpark Data Processing/data/customers], PartitionFilters: [], PushedFilters: [IsNotNull(is_active), EqualTo(is_active,true), IsNotNull(customer_id)], ReadSchema: struct<customer_id:bigint,customer_region:string,segment:string,loyalty_tier:string,is_active:boo...
+
+== Physical Plan ==
+AdaptiveSparkPlan isFinalPlan=false
++- HashAggregate(keys=[segment#183], functions=[count(1)], output=[segment#183, customers#1264L])
+   +- Exchange hashpartitioning(segment#183, 32), ENSURE_REQUIREMENTS, [plan_id=3516]
+      +- HashAggregate(keys=[segment#183], functions=[partial_count(1)], output=[segment#183, count#1372L])
+         +- InMemoryTableScan [segment#183]
+               +- InMemoryRelation [customer_id#156L, segment#183, loyalty_tier#184, customer_region#182, orders#603L, lifetime_net#604, avg_discount#605], StorageLevel(disk, memory, deserialized, 1 replicas)
+                     +- AdaptiveSparkPlan isFinalPlan=true
+                        +- == Final Plan ==
+                           ResultQueryStage 3
+                           +- *(4) HashAggregate(keys=[customer_id#156L, segment#183, loyalty_tier#184, customer_region#182], functions=[count(1), sum(net_revenue#389), avg(discount_pct#162)], output=[customer_id#156L, segment#183, loyalty_tier#184, customer_region#182, orders#603L, lifetime_net#604, avg_discount#605])
+                              +- ShuffleQueryStage 2
+                                 +- Exchange hashpartitioning(customer_id#156L, segment#183, loyalty_tier#184, customer_region#182, 32), ENSURE_REQUIREMENTS, [plan_id=3352]
+                                    +- *(3) HashAggregate(keys=[customer_id#156L, segment#183, loyalty_tier#184, customer_region#182], functions=[partial_count(1), partial_sum(net_revenue#389), partial_avg(discount_pct#162)], output=[customer_id#156L, segment#183, loyalty_tier#184, customer_region#182, count#613L, sum#614, sum#615, count#616L])
+                                       +- *(3) Project [customer_id#156L, discount_pct#162, net_revenue#389, segment#183, loyalty_tier#184, customer_region#182]
+                                          +- *(3) BroadcastHashJoin [customer_id#156L], [customer_id#180L], Inner, BuildRight, false, false
+                                             :- *(3) Project [customer_id#156L, discount_pct#162, net_revenue#389]
+                                             :  +- *(3) BroadcastHashJoin [product_id#157L], [product_id#172L], Inner, BuildRight, false, false
+                                             :     :- *(3) Project [customer_id#156L, product_id#157L, discount_pct#162, round((round((cast(quantity#160 as double) * unit_price#161), 2) * (1.0 - discount_pct#162)), 2) AS net_revenue#389]
+                                             :     :  +- *(3) Filter (((((((isnotnull(status#165) AND isnotnull(discount_pct#162)) AND isnotnull(quantity#160)) AND (status#165 = COMPLETED)) AND (discount_pct#162 <= 0.5)) AND (quantity#160 > 0)) AND isnotnull(product_id#157L)) AND isnotnull(customer_id#156L))
+                                             :     :     +- *(3) ColumnarToRow
+                                             :     :        +- FileScan parquet [customer_id#156L,product_id#157L,quantity#160,unit_price#161,discount_pct#162,status#165,sale_month#171] Batched: true, DataFilters: [isnotnull(status#165), isnotnull(discount_pct#162), isnotnull(quantity#160), (status#165 = COMPL..., Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/Users/ajr115/Desktop/PySpark Data Processing/data/transactions], PartitionFilters: [isnotnull(sale_month#171), (sale_month#171 >= 2023-01)], PushedFilters: [IsNotNull(status), IsNotNull(discount_pct), IsNotNull(quantity), EqualTo(status,COMPLETED), Less..., ReadSchema: struct<customer_id:bigint,product_id:bigint,quantity:int,unit_price:double,discount_pct:double,st...
+                                             :     +- BroadcastQueryStage 0
+                                             :        +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=3225]
+                                             :           +- *(1) Project [product_id#172L]
+                                             :              +- *(1) Filter ((isnotnull(is_active#177) AND is_active#177) AND isnotnull(product_id#172L))
+                                             :                 +- *(1) ColumnarToRow
+                                             :                    +- FileScan parquet [product_id#172L,is_active#177] Batched: true, DataFilters: [isnotnull(is_active#177), is_active#177, isnotnull(product_id#172L)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/Users/ajr115/Desktop/PySpark Data Processing/data/products], PartitionFilters: [], PushedFilters: [IsNotNull(is_active), EqualTo(is_active,true), IsNotNull(product_id)], ReadSchema: struct<product_id:bigint,is_active:boolean>
+                                             +- BroadcastQueryStage 1
+                                                +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=3246]
+                                                   +- *(2) Project [customer_id#180L, segment#183, loyalty_tier#184, customer_region#182]
+                                                      +- *(2) Filter ((isnotnull(is_active#186) AND is_active#186) AND isnotnull(customer_id#180L))
+                                                         +- *(2) ColumnarToRow
+                                                            +- FileScan parquet [customer_id#180L,customer_region#182,segment#183,loyalty_tier#184,is_active#186] Batched: true, DataFilters: [isnotnull(is_active#186), is_active#186, isnotnull(customer_id#180L)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/Users/ajr115/Desktop/PySpark Data Processing/data/customers], PartitionFilters: [], PushedFilters: [IsNotNull(is_active), EqualTo(is_active,true), IsNotNull(customer_id)], ReadSchema: struct<customer_id:bigint,customer_region:string,segment:string,loyalty_tier:string,is_active:boo...
+                        +- == Initial Plan ==
+                           HashAggregate(keys=[customer_id#156L, segment#183, loyalty_tier#184, customer_region#182], functions=[count(1), sum(net_revenue#389), avg(discount_pct#162)], output=[customer_id#156L, segment#183, loyalty_tier#184, customer_region#182, orders#603L, lifetime_net#604, avg_discount#605])
+                           +- Exchange hashpartitioning(customer_id#156L, segment#183, loyalty_tier#184, customer_region#182, 32), ENSURE_REQUIREMENTS, [plan_id=3162]
+                              +- HashAggregate(keys=[customer_id#156L, segment#183, loyalty_tier#184, customer_region#182], functions=[partial_count(1), partial_sum(net_revenue#389), partial_avg(discount_pct#162)], output=[customer_id#156L, segment#183, loyalty_tier#184, customer_region#182, count#613L, sum#614, sum#615, count#616L])
+                                 +- Project [customer_id#156L, discount_pct#162, net_revenue#389, segment#183, loyalty_tier#184, customer_region#182]
+                                    +- BroadcastHashJoin [customer_id#156L], [customer_id#180L], Inner, BuildRight, false, false
+                                       :- Project [customer_id#156L, discount_pct#162, net_revenue#389]
+                                       :  +- BroadcastHashJoin [product_id#157L], [product_id#172L], Inner, BuildRight, false, false
+                                       :     :- Project [customer_id#156L, product_id#157L, discount_pct#162, round((round((cast(quantity#160 as double) * unit_price#161), 2) * (1.0 - discount_pct#162)), 2) AS net_revenue#389]
+                                       :     :  +- Filter (((((((isnotnull(status#165) AND isnotnull(discount_pct#162)) AND isnotnull(quantity#160)) AND (status#165 = COMPLETED)) AND (discount_pct#162 <= 0.5)) AND (quantity#160 > 0)) AND isnotnull(product_id#157L)) AND isnotnull(customer_id#156L))
+                                       :     :     +- FileScan parquet [customer_id#156L,product_id#157L,quantity#160,unit_price#161,discount_pct#162,status#165,sale_month#171] Batched: true, DataFilters: [isnotnull(status#165), isnotnull(discount_pct#162), isnotnull(quantity#160), (status#165 = COMPL..., Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/Users/ajr115/Desktop/PySpark Data Processing/data/transactions], PartitionFilters: [isnotnull(sale_month#171), (sale_month#171 >= 2023-01)], PushedFilters: [IsNotNull(status), IsNotNull(discount_pct), IsNotNull(quantity), EqualTo(status,COMPLETED), Less..., ReadSchema: struct<customer_id:bigint,product_id:bigint,quantity:int,unit_price:double,discount_pct:double,st...
+                                       :     +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=3153]
+                                       :        +- Project [product_id#172L]
+                                       :           +- Filter ((isnotnull(is_active#177) AND is_active#177) AND isnotnull(product_id#172L))
+                                       :              +- FileScan parquet [product_id#172L,is_active#177] Batched: true, DataFilters: [isnotnull(is_active#177), is_active#177, isnotnull(product_id#172L)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/Users/ajr115/Desktop/PySpark Data Processing/data/products], PartitionFilters: [], PushedFilters: [IsNotNull(is_active), EqualTo(is_active,true), IsNotNull(product_id)], ReadSchema: struct<product_id:bigint,is_active:boolean>
+                                       +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, true]),false), [plan_id=3157]
+                                          +- Project [customer_id#180L, segment#183, loyalty_tier#184, customer_region#182]
+                                             +- Filter ((isnotnull(is_active#186) AND is_active#186) AND isnotnull(customer_id#180L))
+                                                +- FileScan parquet [customer_id#180L,customer_region#182,segment#183,loyalty_tier#184,is_active#186] Batched: true, DataFilters: [isnotnull(is_active#186), is_active#186, isnotnull(customer_id#180L)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/Users/ajr115/Desktop/PySpark Data Processing/data/customers], PartitionFilters: [], PushedFilters: [IsNotNull(is_active), EqualTo(is_active,true), IsNotNull(customer_id)], ReadSchema: struct<customer_id:bigint,customer_region:string,segment:string,loyalty_tier:string,is_active:boo...

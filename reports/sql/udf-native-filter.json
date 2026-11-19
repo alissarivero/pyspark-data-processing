@@ -1,0 +1,275 @@
+{
+  "id": 12,
+  "status": "COMPLETED",
+  "description": "udf-native-filter",
+  "planDescription": "== Physical Plan ==\nAdaptiveSparkPlan (15)\n+- == Final Plan ==\n   ResultQueryStage (9), Statistics(sizeInBytes=8.0 EiB)\n   +- * HashAggregate (8)\n      +- ShuffleQueryStage (7), Statistics(sizeInBytes=96.0 B, rowCount=6)\n         +- Exchange (6)\n            +- * HashAggregate (5)\n               +- * Project (4)\n                  +- * Filter (3)\n                     +- * ColumnarToRow (2)\n                        +- Scan parquet  (1)\n+- == Initial Plan ==\n   HashAggregate (14)\n   +- Exchange (13)\n      +- HashAggregate (12)\n         +- Project (11)\n            +- Filter (10)\n               +- Scan parquet  (1)\n\n\n(1) Scan parquet \nOutput [2]: [status#165, sale_month#171]\nBatched: true\nLocation: InMemoryFileIndex [file:/Users/ajr115/Desktop/PySpark Data Processing/data/transactions]\nPartitionFilters: [isnotnull(sale_month#171), (sale_month#171 = 2024-06)]\nPushedFilters: [IsNotNull(status), EqualTo(status,COMPLETED)]\nReadSchema: struct<status:string>\n\n(2) ColumnarToRow [codegen id : 1]\nInput [2]: [status#165, sale_month#171]\n\n(3) Filter [codegen id : 1]\nInput [2]: [status#165, sale_month#171]\nCondition : (isnotnull(status#165) AND (status#165 = COMPLETED))\n\n(4) Project [codegen id : 1]\nOutput: []\nInput [2]: [status#165, sale_month#171]\n\n(5) HashAggregate [codegen id : 1]\nInput: []\nKeys: []\nFunctions [1]: [partial_count(1)]\nAggregate Attributes [1]: [count#264L]\nResults [1]: [count#265L]\n\n(6) Exchange\nInput [1]: [count#265L]\nArguments: SinglePartition, ENSURE_REQUIREMENTS, [plan_id=784]\n\n(7) ShuffleQueryStage\nOutput [1]: [count#265L]\nArguments: 0\n\n(8) HashAggregate [codegen id : 2]\nInput [1]: [count#265L]\nKeys: []\nFunctions [1]: [count(1)]\nAggregate Attributes [1]: [count(1)#263L]\nResults [1]: [count(1)#263L AS count#245L]\n\n(9) ResultQueryStage\nOutput [1]: [count#245L]\nArguments: 1\n\n(10) Filter\nInput [2]: [status#165, sale_month#171]\nCondition : (isnotnull(status#165) AND (status#165 = COMPLETED))\n\n(11) Project\nOutput: []\nInput [2]: [status#165, sale_month#171]\n\n(12) HashAggregate\nInput: []\nKeys: []\nFunctions [1]: [partial_count(1)]\nAggregate Attributes [1]: [count#264L]\nResults [1]: [count#265L]\n\n(13) Exchange\nInput [1]: [count#265L]\nArguments: SinglePartition, ENSURE_REQUIREMENTS, [plan_id=764]\n\n(14) HashAggregate\nInput [1]: [count#265L]\nKeys: []\nFunctions [1]: [count(1)]\nAggregate Attributes [1]: [count(1)#263L]\nResults [1]: [count(1)#263L AS count#245L]\n\n(15) AdaptiveSparkPlan\nOutput [1]: [count#245L]\nArguments: isFinalPlan=true\n\n",
+  "submissionTime": "2026-11-19T15:04:35.496GMT",
+  "duration": 130,
+  "runningJobIds": [],
+  "successJobIds": [
+    26,
+    27
+  ],
+  "failedJobIds": [],
+  "nodes": [
+    {
+      "nodeId": 9,
+      "nodeName": "Scan parquet",
+      "metrics": [
+        {
+          "name": "number of files read",
+          "value": "6"
+        },
+        {
+          "name": "scan time",
+          "value": "total (min, med, max (stageId: taskId))\n42 ms (5 ms, 6 ms, 10 ms (stage 36.0: task 342))"
+        },
+        {
+          "name": "dynamic partition pruning time",
+          "value": "0 ms"
+        },
+        {
+          "name": "metadata time",
+          "value": "0 ms"
+        },
+        {
+          "name": "size of files read",
+          "value": "30.7 MiB"
+        },
+        {
+          "name": "number of output rows",
+          "value": "390,650"
+        },
+        {
+          "name": "number of partitions read",
+          "value": "1"
+        }
+      ],
+      "desc": "FileScan parquet [status#165,sale_month#171] Batched: true, DataFilters: [isnotnull(status#165), (status#165 = COMPLETED)], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/Users/ajr115/Desktop/PySpark Data Processing/data/transactions], PartitionFilters: [isnotnull(sale_month#171), (sale_month#171 = 2024-06)], PushedFilters: [IsNotNull(status), EqualTo(status,COMPLETED)], ReadSchema: struct<status:string>"
+    },
+    {
+      "nodeId": 8,
+      "nodeName": "ColumnarToRow",
+      "wholeStageCodegenId": 1,
+      "metrics": [
+        {
+          "name": "number of output rows",
+          "value": "390,650"
+        },
+        {
+          "name": "number of input batches",
+          "value": "97"
+        }
+      ],
+      "desc": "ColumnarToRow"
+    },
+    {
+      "nodeId": 7,
+      "nodeName": "Filter",
+      "wholeStageCodegenId": 1,
+      "metrics": [
+        {
+          "name": "number of output rows",
+          "value": "318,813"
+        }
+      ],
+      "desc": "Filter (isnotnull(status#165) AND (status#165 = COMPLETED))"
+    },
+    {
+      "nodeId": 6,
+      "nodeName": "Project",
+      "wholeStageCodegenId": 1,
+      "metrics": [],
+      "desc": "Project"
+    },
+    {
+      "nodeId": 5,
+      "nodeName": "HashAggregate",
+      "wholeStageCodegenId": 1,
+      "metrics": [
+        {
+          "name": "time in aggregation build",
+          "value": "total (min, med, max (stageId: taskId))\n401 ms (31 ms, 74 ms, 77 ms (stage 36.0: task 340))"
+        },
+        {
+          "name": "number of output rows",
+          "value": "6"
+        }
+      ],
+      "desc": "HashAggregate(keys=[], functions=[partial_count(1)])"
+    },
+    {
+      "nodeId": 4,
+      "nodeName": "WholeStageCodegen (1)",
+      "metrics": [
+        {
+          "name": "duration",
+          "value": "total (min, med, max (stageId: taskId))\n402 ms (31 ms, 74 ms, 77 ms (stage 36.0: task 340))"
+        }
+      ],
+      "desc": "WholeStageCodegen (1)"
+    },
+    {
+      "nodeId": 3,
+      "nodeName": "Exchange",
+      "metrics": [
+        {
+          "name": "shuffle records written",
+          "value": "6"
+        },
+        {
+          "name": "remote merged reqs duration",
+          "value": "0 ms"
+        },
+        {
+          "name": "remote merged blocks fetched",
+          "value": "0"
+        },
+        {
+          "name": "records read",
+          "value": "6"
+        },
+        {
+          "name": "local bytes read",
+          "value": "354.0 B"
+        },
+        {
+          "name": "merged fetch fallback count",
+          "value": "0"
+        },
+        {
+          "name": "local blocks read",
+          "value": "6"
+        },
+        {
+          "name": "remote merged chunks fetched",
+          "value": "0"
+        },
+        {
+          "name": "remote blocks read",
+          "value": "0"
+        },
+        {
+          "name": "data size",
+          "value": "total (min, med, max (stageId: taskId))\n96.0 B (16.0 B, 16.0 B, 16.0 B (stage 36.0: task 344))"
+        },
+        {
+          "name": "local merged bytes read",
+          "value": "0.0 B"
+        },
+        {
+          "name": "local merged chunks fetched",
+          "value": "0"
+        },
+        {
+          "name": "shuffle write time",
+          "value": "total (min, med, max (stageId: taskId))\n3 ms (0 ms, 0 ms, 1 ms (stage 36.0: task 343))"
+        },
+        {
+          "name": "remote merged bytes read",
+          "value": "0.0 B"
+        },
+        {
+          "name": "local merged blocks fetched",
+          "value": "0"
+        },
+        {
+          "name": "corrupt merged block chunks",
+          "value": "0"
+        },
+        {
+          "name": "fetch wait time",
+          "value": "0 ms"
+        },
+        {
+          "name": "remote bytes read",
+          "value": "0.0 B"
+        },
+        {
+          "name": "number of partitions",
+          "value": "1"
+        },
+        {
+          "name": "remote reqs duration",
+          "value": "0 ms"
+        },
+        {
+          "name": "remote bytes read to disk",
+          "value": "0.0 B"
+        },
+        {
+          "name": "shuffle bytes written",
+          "value": "total (min, med, max (stageId: taskId))\n354.0 B (59.0 B, 59.0 B, 59.0 B (stage 36.0: task 344))"
+        }
+      ],
+      "desc": "Exchange SinglePartition, ENSURE_REQUIREMENTS, [plan_id=784]"
+    },
+    {
+      "nodeId": 2,
+      "nodeName": "HashAggregate",
+      "wholeStageCodegenId": 2,
+      "metrics": [
+        {
+          "name": "time in aggregation build",
+          "value": "0 ms"
+        },
+        {
+          "name": "number of output rows",
+          "value": "1"
+        }
+      ],
+      "desc": "HashAggregate(keys=[], functions=[count(1)])"
+    },
+    {
+      "nodeId": 1,
+      "nodeName": "WholeStageCodegen (2)",
+      "metrics": [
+        {
+          "name": "duration",
+          "value": "0 ms"
+        }
+      ],
+      "desc": "WholeStageCodegen (2)"
+    },
+    {
+      "nodeId": 0,
+      "nodeName": "AdaptiveSparkPlan",
+      "metrics": [],
+      "desc": "AdaptiveSparkPlan isFinalPlan=true"
+    }
+  ],
+  "edges": [
+    {
+      "fromId": 2,
+      "toId": 0
+    },
+    {
+      "fromId": 3,
+      "toId": 2
+    },
+    {
+      "fromId": 5,
+      "toId": 3
+    },
+    {
+      "fromId": 6,
+      "toId": 5
+    },
+    {
+      "fromId": 7,
+      "toId": 6
+    },
+    {
+      "fromId": 8,
+      "toId": 7
+    },
+    {
+      "fromId": 9,
+      "toId": 8
+    }
+  ],
+  "queryId": "01a1f456-8da6-7acc-a62b-6fa302fa84f6",
+  "errorMessage": "",
+  "rootExecutionId": 12,
+  "modifiedConfigs": {}
+}

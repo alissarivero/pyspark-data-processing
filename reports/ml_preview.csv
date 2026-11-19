@@ -1,0 +1,13 @@
+channel,category,segment,quantity,discount_pct,label,prediction
+store,Electronics,premium,1,0.05,0.0,0.0
+marketplace,Apparel,business,1,0.0,0.0,0.0
+marketplace,Automotive,student,1,0.0,1.0,0.0
+marketplace,Sports,student,1,0.0,1.0,0.0
+web,Beauty,premium,1,0.0,0.0,0.0
+web,Apparel,consumer,1,0.0,0.0,0.0
+marketplace,Grocery,business,1,0.05,0.0,0.0
+store,Sports,business,1,0.0,0.0,0.0
+store,Toys,student,1,0.0,0.0,0.0
+web,Apparel,student,1,0.0,0.0,0.0
+app,Apparel,consumer,1,0.05,0.0,0.0
+store,Apparel,consumer,1,0.1,0.0,0.0
