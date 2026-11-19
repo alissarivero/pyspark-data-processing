@@ -1,0 +1,8 @@
+requirements.txt
+**/*.py
+.venv
+.tools
+data
+output
+spark-events
+spark-local

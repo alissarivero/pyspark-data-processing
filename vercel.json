@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "",
+  "buildCommand": "",
+  "rewrites": [
+    { "source": "/", "destination": "/pyspark_pipeline.html" }
+  ]
+}
